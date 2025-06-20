@@ -2,7 +2,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- Configuration ---
-    const API_BASE_URL = 'http://localhost:8080/api';
+    const API_BASE_URL = '/api';
 
     // --- DOM Element References ---
     const languageSelect = document.getElementById('language-select');

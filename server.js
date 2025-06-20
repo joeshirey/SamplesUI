@@ -23,7 +23,6 @@ if (!table) {
     console.error('FATAL ERROR: BIGQUERY_TABLE_ID is not defined in your .env file.');
     process.exit(1);
 }
-
 // --- API Endpoints ---
 
 // GET /api/languages

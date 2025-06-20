@@ -1,35 +1,25 @@
 steps:
 # 1. Build the container image
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/code-quality-repo/dashboard:$BUILD_ID', '.']
+  args: ['build', '-t', 'us-central1-docker.pkg.dev/${PROJECT_ID}/code-quality-repo/code-quality-dashboard:$BUILD_ID', '.']
 
 # 2. Push the container image to Artifact Registry
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/code-quality-repo/dashboard:$BUILD_ID']
+  args: ['push', 'us-central1-docker.pkg.dev/${PROJECT_ID}/code-quality-repo/code-quality-dashboard:$BUILD_ID']
 
 # 3. Deploy container image to Cloud Run
-# This step now uses the more common 'gcr.io/cloud-builders/gcloud' builder
-- name: 'gcr.io/cloud-builders/gcloud'
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   entrypoint: gcloud
   args:
     - 'run'
     - 'deploy'
-    - 'code-quality-dashboard' # The name of your Cloud Run service
-    - '--image'
-    - 'us-central1-docker.pkg.dev/$PROJECT_ID/code-quality-repo/dashboard:$BUILD_ID'
-    - '--region'
-    - 'us-central1' # Choose the region that is best for you
-    - '--platform'
-    - 'managed'
-    - '--allow-unauthenticated' # Use '--no-allow-unauthenticated' for a private service
-    - '--set-env-vars'
-    # These variables are injected into your Cloud Run service
-    # Add all required variables from your .env file here
-    - '^##^BIGQUERY_TABLE_ID=joeshireylearn-374523.existing_samples.v_all_samples##PROJECT_ID=joeshireylearn-374523'
+    - 'code-quality-dashboard' # This will be the name of your Cloud Run service
+    - '--image=us-central1-docker.pkg.dev/${PROJECT_ID}/code-quality-repo/code-quality-dashboard:$BUILD_ID'
+    - '--region=us-central1' # You can change this to your preferred region
+    - '--platform=managed'
+    - '--allow-unauthenticated' # This makes the service publicly accessible
+    - '--set-env-vars=BIGQUERY_TABLE_ID=joeshireylearn-374523.existing_samples.v_all_samples,PROJECT_ID=joeshireylearn-374523'
 
-# Specify the image to be created
+# Store the image name for later builds
 images:
-- 'us-central1-docker.pkg.dev/$PROJECT_ID/code-quality-repo/dashboard:$BUILD_ID'
-
-options:
-  logging: CLOUD_LOGGING_ONLY
+  - 'us-central1-docker.pkg.dev/${PROJECT_ID}/code-quality-repo/code-quality-dashboard:$BUILD_ID'
