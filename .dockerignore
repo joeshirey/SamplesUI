@@ -1,0 +1,16 @@
+# Ignore dependencies, as they are installed inside the container
+node_modules
+
+# Ignore local environment file - we will set these in Cloud Run
+.env
+
+# Ignore Docker and deployment specific files
+Dockerfile
+.dockerignore
+cloudbuild.yaml
+README.md
+DEPLOY.md
+
+# Ignore git files
+.git
+.gitignore

@@ -1,0 +1,17 @@
+{
+  "name": "code-quality-dashboard-backend",
+  "version": "1.0.0",
+  "description": "Backend server to query BigQuery for the Code Quality Dashboard.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google-cloud/bigquery": "^7.8.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  }
+}

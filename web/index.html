@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gray-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Quality Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Highlight.js for Syntax Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/stackoverflow-light.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://rsms.me/">
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    <style>
+        :root { font-family: 'Inter', sans-serif; }
+        @supports (font-variation-settings: normal) {
+            :root { font-family: 'Inter var', sans-serif; }
+        }
+        /* Custom scrollbars for a more modern look */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9; /* gray-100 */
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1; /* gray-300 */
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; /* gray-400 */
+        }
+    </style>
+</head>
+<body class="h-full overflow-hidden">
+    <div class="flex flex-col h-screen">
+        <!-- Header -->
+        <header class="bg-white shadow-sm p-4 z-10 flex-shrink-0">
+            <h1 class="text-xl font-bold text-gray-800 text-center md:text-left">Code Quality Dashboard</h1>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-grow grid grid-cols-1 md:grid-cols-12 gap-4 p-4 overflow-hidden">
+
+            <!-- Panel 1: Navigation -->
+            <div id="product-area-panel" class="md:col-span-3 bg-white p-4 rounded-lg shadow-sm overflow-y-auto custom-scrollbar flex flex-col">
+                <!-- Language Filter -->
+                <div class="mb-4">
+                    <label for="language-select" class="block text-sm font-medium text-gray-700 mb-1">Language</label>
+                    <select id="language-select" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white">
+                        <option selected disabled>Loading...</option>
+                    </select>
+                </div>
+                <!-- Product Areas -->
+                <h2 class="text-lg font-semibold text-gray-700 mb-3 border-t pt-4">Product Areas</h2>
+                <div id="product-area-list" class="space-y-2 flex-grow">
+                    <p class="text-gray-500">Select a language to see product areas.</p>
+                </div>
+            </div>
+
+            <!-- Panel 2: Region Tag View -->
+            <div id="region-tag-panel" class="md:col-span-3 bg-white p-4 rounded-lg shadow-sm overflow-y-auto custom-scrollbar">
+                <h2 class="text-lg font-semibold text-gray-700 mb-3">Region Tags</h2>
+                <div id="region-tag-list" class="space-y-2">
+                    <p class="text-gray-500">Select a product area to see region tags.</p>
+                </div>
+            </div>
+
+            <!-- Panel 3: Detail View -->
+            <div id="detail-panel" class="md:col-span-6 bg-gray-50 p-4 rounded-lg shadow-inner overflow-y-auto custom-scrollbar">
+                <div id="detail-view-content">
+                    <p class="text-gray-500">Select a region tag to see details.</p>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Error Modal -->
+    <div id="error-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                    <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-2">Application Error</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p id="error-message" class="text-sm text-gray-500 break-words"></p>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="close-error-modal" class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Logic -->
+    <script src="app.js"></script>
+</body>
+</html>

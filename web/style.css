@@ -1,0 +1,22 @@
+/* web/style.css */
+
+/* Using a font similar to Google's UI for a consistent feel */
+body {
+    font-family: 'Roboto', sans-serif; /* A good fallback is the default sans-serif in the HTML body tag */
+}
+
+/* Custom styles for a more polished look if needed */
+.product-area-item[data-product-area], .region-tag-item[data-region-tag] {
+    transition: background-color 0.2s ease-in-out;
+}
+
+/* Add a subtle border to the active/selected items */
+.bg-blue-100 {
+    border-left: 4px solid #3b82f6; /* blue-500 */
+}
+
+/* Ensure the code block font is consistent */
+pre code.hljs {
+    font-family: 'Fira Code', 'Courier New', monospace;
+    font-size: 14px;
+}
