@@ -25,7 +25,7 @@ steps:
     - '--set-env-vars'
     # These variables are injected into your Cloud Run service
     # Add all required variables from your .env file here
-    - '^##^BIGQUERY_TABLE_ID=your-project.your_dataset.your_table##PROJECT_ID=your-gcp-project-id'
+    - '^##^BIGQUERY_TABLE_ID=joeshireylearn-374523.existing_samples.v_all_samples##PROJECT_ID=joeshireylearn-374523'
 
 # Specify the image to be created
 images:

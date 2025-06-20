@@ -9,7 +9,7 @@ Code Quality DashboardThis project contains the frontend and backend for the Cod
 How to RunYou will need to have Node.js installed on your machine.A. Backend SetupAuthenticate with Google Cloud: The server uses Application Default Credentials. Run this command once to authenticate your local environment with GCP:gcloud auth application-default login
 Install Dependencies: Open your terminal in the project's root directory and run:npm install
 Start the Backend Server:node server.js
-The server will start, usually on port 3000. You should see a message Server listening on port 3000.B. Frontend SetupStart the Frontend Server: Open a new, separate terminal window, navigate to the project root, and run the Python web server as before:# For Python 3
+The server will start, usually on port 8080. You should see a message Server listening on port 8080.B. Frontend SetupStart the Frontend Server: Open a new, separate terminal window, navigate to the project root, and run the Python web server as before:# For Python 3
 python3 -m http.server
 
 # For Python 2
