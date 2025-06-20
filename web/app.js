@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const regionTagSortSelect = document.getElementById('region-tag-sort');
     const regionTagList = document.getElementById('region-tag-list');
     const detailViewContent = document.getElementById('detail-view-content');
+    const copyLinkButton = document.getElementById('copy-link-button');
     const errorModal = document.getElementById('error-modal');
     const errorMessage = document.getElementById('error-message');
     const closeErrorModalBtn = document.getElementById('close-error-modal');
@@ -20,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- State Management ---
     let currentLanguage = null;
     let currentProductArea = null;
+    let currentRegionTag = null; // New state variable for the currently selected region tag
     let allProductAreas = []; // Store all fetched product areas
     let filteredAndSortedProductAreas = []; // Store the currently displayed product areas
     let allRegionTags = []; // Store all fetched region tags for the current product area
@@ -31,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     productAreaSortSelect.addEventListener('change', applyProductAreaFiltersAndSorting);
     regionTagFilterInput.addEventListener('input', applyRegionTagFiltersAndSorting);
     regionTagSortSelect.addEventListener('change', applyRegionTagFiltersAndSorting);
+    copyLinkButton.addEventListener('click', copyCurrentLink);
     closeErrorModalBtn.addEventListener('click', () => errorModal.classList.add('hidden'));
 
     // --- Core Functions ---
@@ -104,17 +107,19 @@ document.addEventListener('DOMContentLoaded', () => {
      * Handles clicking on a region tag.
      */
     async function handleRegionTagClick(clickedElement, regionTagName) {
+        currentRegionTag = regionTagName; // Update currentRegionTag
+        
         document.querySelectorAll('#region-tag-list .region-tag-item').forEach(item => item.classList.remove('bg-blue-100'));
         clickedElement.classList.add('bg-blue-100');
-        
+
         clearDetailView();
         detailViewContent.innerHTML = '<p class="text-gray-500">Loading details...</p>';
 
         try {
-            const evaluationData = await fetchEvaluationDetails(currentLanguage, currentProductArea, regionTagName);
+            const evaluationData = await fetchEvaluationDetails(currentLanguage, currentProductArea, currentRegionTag);
             renderDetailView(evaluationData);
         } catch (error) {
-            showError(`Failed to fetch details for ${regionTagName}: ${error.message}`);
+            showError(`Failed to fetch details for ${currentRegionTag}: ${error.message}`);
             detailViewContent.innerHTML = `<p class="text-red-500">Error loading details.</p>`;
         }
     }
@@ -386,6 +391,75 @@ document.addEventListener('DOMContentLoaded', () => {
         errorModal.classList.remove('hidden');
     }
 
+    /**
+     * Copies a hard link to the current detail view to the clipboard.
+     */
+    function copyCurrentLink() {
+        if (!currentLanguage || !currentProductArea || !currentRegionTag) {
+            showError('Please select a language, product area, and region tag to generate a link.');
+            return;
+        }
+
+        const baseUrl = window.location.origin + window.location.pathname;
+        const link = `${baseUrl}?lang=${encodeURIComponent(currentLanguage)}&pa=${encodeURIComponent(currentProductArea)}&rt=${encodeURIComponent(currentRegionTag)}`;
+
+        navigator.clipboard.writeText(link).then(() => {
+            // Provide visual feedback
+            const originalText = copyLinkButton.innerHTML;
+            copyLinkButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                        </svg><span>Copied!</span>`;
+            setTimeout(() => {
+                copyLinkButton.innerHTML = originalText;
+            }, 2000);
+        }).catch(err => {
+            showError('Failed to copy link: ' + err);
+        });
+    }
+
+    /**
+     * Parses URL parameters and attempts to load the corresponding data.
+     */
+    async function loadFromUrlParams() {
+        const params = new URLSearchParams(window.location.search);
+        const lang = params.get('lang');
+        const pa = params.get('pa');
+        const rt = params.get('rt');
+
+        if (lang) {
+            // Select the language in the dropdown
+            languageSelect.value = lang;
+            currentLanguage = lang;
+            
+            // Fetch product areas and then attempt to select product area and region tag
+            try {
+                allProductAreas = await fetchProductAreas(currentLanguage);
+                applyProductAreaFiltersAndSorting(); // Render product areas
+
+                if (pa) {
+                    currentProductArea = pa;
+                    // Simulate click on product area to load region tags
+                    // This is a simplified approach; a more robust solution might involve
+                    // finding the actual DOM element and triggering a click, or
+                    // directly calling handleProductAreaClick with a dummy element.
+                    // For now, we'll just fetch region tags directly.
+                    allRegionTags = await fetchRegionTags(currentLanguage, currentProductArea);
+                    applyRegionTagFiltersAndSorting(); // Render region tags
+
+                    if (rt) {
+                        currentRegionTag = rt;
+                        // Directly render detail view
+                        const evaluationData = await fetchEvaluationDetails(currentLanguage, currentProductArea, currentRegionTag);
+                        renderDetailView(evaluationData);
+                    }
+                }
+            } catch (error) {
+                showError(`Failed to load data from URL parameters: ${error.message}`);
+            }
+        }
+    }
+
     // --- App Initialization ---
     initializeApp();
+    loadFromUrlParams(); // Attempt to load data from URL parameters on initial load
 });
