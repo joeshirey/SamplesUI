@@ -6,7 +6,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- DOM Element References ---
     const languageSelect = document.getElementById('language-select');
+    const productAreaFilterInput = document.getElementById('product-area-filter');
+    const productAreaSortSelect = document.getElementById('product-area-sort');
     const productAreaList = document.getElementById('product-area-list');
+    const regionTagFilterInput = document.getElementById('region-tag-filter');
+    const regionTagSortSelect = document.getElementById('region-tag-sort');
     const regionTagList = document.getElementById('region-tag-list');
     const detailViewContent = document.getElementById('detail-view-content');
     const errorModal = document.getElementById('error-modal');
@@ -16,9 +20,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- State Management ---
     let currentLanguage = null;
     let currentProductArea = null;
+    let allProductAreas = []; // Store all fetched product areas
+    let filteredAndSortedProductAreas = []; // Store the currently displayed product areas
+    let allRegionTags = []; // Store all fetched region tags for the current product area
+    let filteredAndSortedRegionTags = []; // Store the currently displayed region tags
 
     // --- Event Listeners ---
     languageSelect.addEventListener('change', handleLanguageChange);
+    productAreaFilterInput.addEventListener('input', applyProductAreaFiltersAndSorting);
+    productAreaSortSelect.addEventListener('change', applyProductAreaFiltersAndSorting);
+    regionTagFilterInput.addEventListener('input', applyRegionTagFiltersAndSorting);
+    regionTagSortSelect.addEventListener('change', applyRegionTagFiltersAndSorting);
     closeErrorModalBtn.addEventListener('click', () => errorModal.classList.add('hidden'));
 
     // --- Core Functions ---
@@ -53,10 +65,12 @@ document.addEventListener('DOMContentLoaded', () => {
         clearRegionTagList();
         clearDetailView();
         productAreaList.innerHTML = '<p class="text-gray-500">Loading product areas...</p>';
+        productAreaFilterInput.value = ''; // Clear product area filter on language change
+        regionTagFilterInput.value = ''; // Clear region tag filter on language change
 
         try {
-            const productAreas = await fetchProductAreas(currentLanguage);
-            renderProductAreaList(productAreas);
+            allProductAreas = await fetchProductAreas(currentLanguage);
+            applyProductAreaFiltersAndSorting(); // Apply initial sort/filter for product areas
         } catch (error) {
             showError(`Failed to fetch product areas for ${currentLanguage}: ${error.message}`);
             productAreaList.innerHTML = `<p class="text-red-500">Error loading data.</p>`;
@@ -75,10 +89,11 @@ document.addEventListener('DOMContentLoaded', () => {
         clearRegionTagList();
         clearDetailView();
         regionTagList.innerHTML = '<p class="text-gray-500">Loading region tags...</p>';
+        regionTagFilterInput.value = ''; // Clear region tag filter on product area change
 
         try {
-            const regionTags = await fetchRegionTags(currentLanguage, currentProductArea);
-            renderRegionTagList(regionTags);
+            allRegionTags = await fetchRegionTags(currentLanguage, currentProductArea);
+            applyRegionTagFiltersAndSorting(); // Apply initial sort/filter for region tags
         } catch (error) {
              showError(`Failed to fetch region tags for ${currentProductArea}: ${error.message}`);
              regionTagList.innerHTML = `<p class="text-red-500">Error loading data.</p>`;
@@ -104,11 +119,77 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- Filtering and Sorting Logic ---
+
+    function applyProductAreaFiltersAndSorting() {
+        let areasToDisplay = [...allProductAreas]; // Start with all fetched areas
+
+        // Apply Filter
+        const filterText = productAreaFilterInput.value.toLowerCase();
+        if (filterText) {
+            areasToDisplay = areasToDisplay.filter(area =>
+                area.product_area.toLowerCase().includes(filterText)
+            );
+        }
+
+        // Apply Sort
+        const sortOption = productAreaSortSelect.value;
+        areasToDisplay.sort((a, b) => {
+            switch (sortOption) {
+                case 'name':
+                    return a.product_area.localeCompare(b.product_area);
+                case 'count-desc':
+                    return b.samples - a.samples;
+                case 'count-asc':
+                    return a.samples - b.samples;
+                case 'score-desc':
+                    return b.score - a.score;
+                case 'score-asc':
+                    return a.score - b.score;
+                default:
+                    return 0;
+            }
+        });
+
+        filteredAndSortedProductAreas = areasToDisplay;
+        renderProductAreaList(filteredAndSortedProductAreas);
+    }
+
+    function applyRegionTagFiltersAndSorting() {
+        let tagsToDisplay = [...allRegionTags]; // Start with all fetched region tags
+
+        // Apply Filter
+        const filterText = regionTagFilterInput.value.toLowerCase();
+        if (filterText) {
+            tagsToDisplay = tagsToDisplay.filter(tag =>
+                tag.name.toLowerCase().includes(filterText)
+            );
+        }
+
+        // Apply Sort
+        const sortOption = regionTagSortSelect.value;
+        tagsToDisplay.sort((a, b) => {
+            switch (sortOption) {
+                case 'name':
+                    return a.name.localeCompare(b.name);
+                case 'score-desc':
+                    return b.score - a.score;
+                case 'score-asc':
+                    return a.score - b.score;
+                default:
+                    return 0;
+            }
+        });
+
+        filteredAndSortedRegionTags = tagsToDisplay;
+        renderRegionTagList(filteredAndSortedRegionTags);
+    }
+
     // --- Rendering Functions ---
 
     function renderProductAreaList(areas) {
         if (!areas || areas.length === 0) {
-            productAreaList.innerHTML = '<p class="text-gray-500">No product areas found for this language.</p>';
+            productAreaList.innerHTML = '<p class="text-gray-500">No matching product areas found.</p>';
             return;
         }
         productAreaList.innerHTML = '';
@@ -129,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderRegionTagList(tags) {
         if (!tags || tags.length === 0) {
-            regionTagList.innerHTML = '<p class="text-gray-500">No region tags found for this product area.</p>';
+            regionTagList.innerHTML = '<p class="text-gray-500">No matching region tags found.</p>';
             return;
         }
         regionTagList.innerHTML = '';
@@ -139,12 +220,32 @@ document.addEventListener('DOMContentLoaded', () => {
             item.innerHTML = `
                 <div class="flex justify-between items-center">
                     <span class="font-medium text-sm text-gray-800 truncate" title="${tag.name}">${tag.name}</span>
-                    <span class="text-sm font-bold ${tag.score > 85 ? 'text-green-600' : 'text-red-600'}">${tag.score}</span>
+                    <span class="text-sm font-bold ${getScoreColorClass(tag.score)}">${tag.score}</span>
                 </div>
             `;
             item.addEventListener('click', (event) => handleRegionTagClick(event.currentTarget, tag.name));
             regionTagList.appendChild(item);
         });
+    }
+
+    /**
+     * Determines the Tailwind CSS class for a score based on the defined ranges.
+     * @param {number} score The score value.
+     * @returns {string} The Tailwind CSS class for the score color.
+     */
+    function getScoreColorClass(score) {
+        if (score <= 60) {
+            return 'text-red-700'; // Red
+        } else if (score >= 61 && score <= 70) {
+            return 'text-red-500'; // Light Red
+        } else if (score >= 71 && score <= 80) {
+            return 'text-orange-500'; // Orange
+        } else if (score >= 81 && score <= 90) {
+            return 'text-lime-600'; // Light Green (using lime for a distinct shade)
+        } else if (score >= 91) {
+            return 'text-green-700'; // Green
+        }
+        return 'text-gray-700'; // Default color if score is out of expected range
     }
 
     async function renderDetailView(data) {
@@ -184,7 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="flex justify-between items-start mb-4 border-b pb-4">
                 <div>
                     <h3 class="text-xl font-bold text-gray-800">Overall Score</h3>
-                    <p class="text-3xl font-bold ${data.overall_compliance_score > 85 ? 'text-green-600' : 'text-red-600'}">${data.overall_compliance_score}</p>
+                    <p class="text-3xl font-bold ${getScoreColorClass(data.overall_compliance_score)}">${data.overall_compliance_score}</p>
                 </div>
                 <div class="text-right space-y-2">
                      <div>
