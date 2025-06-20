@@ -1,156 +1,145 @@
-// server.js - Backend for Code Quality Dashboard
-
-// Load environment variables from .env file
-require('dotenv').config();
-
+// A simple Express server to handle API requests and serve the frontend.
 const express = require('express');
 const { BigQuery } = require('@google-cloud/bigquery');
-const cors = require('cors');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8080;
 
-// --- Middleware ---
-app.use(cors());
+// Middleware to parse JSON bodies
 app.use(express.json());
 
-// --- Google Cloud Setup ---
-const bigquery = new BigQuery();
-const table = process.env.BIGQUERY_TABLE_ID;
+// --- Static File Serving ---
+app.use(express.static('web'));
+// -------------------------
 
-if (!table) {
-    console.error('FATAL ERROR: BIGQUERY_TABLE_ID is not defined in your .env file.');
-    process.exit(1);
-}
+// Initialize BigQuery client
+const bigquery = new BigQuery();
+
+// Get the table ID from an environment variable for security
+const tableId = process.env.BIGQUERY_TABLE_ID;
 
 // --- API Endpoints ---
 
-// GET /api/languages
-app.get('/api/languages', async (req, res) => {
-    const query = `SELECT DISTINCT sample_language FROM \`${table}\` ORDER BY sample_language`;
-    try {
-        const [rows] = await bigquery.query({ query });
-        const languages = rows.map(row => row.sample_language);
-        res.json(languages);
-    } catch (error) {
-        console.error('ERROR fetching languages:', error);
-        res.status(500).json({ error: 'Failed to fetch languages from BigQuery', details: error.message });
+// Helper function to check for configuration errors
+function checkConfig(req, res) {
+    if (!tableId || tableId.includes('your-project')) {
+        const errorMsg = "The BIGQUERY_TABLE_ID environment variable has not been set correctly on the server. Please check the Cloud Run service configuration.";
+        console.error("FATAL: " + errorMsg);
+        res.status(500).json({
+            error: "Server Configuration Error",
+            details: errorMsg
+        });
+        return false;
     }
-});
+    return true;
+}
 
-// GET /api/product-areas?language=<language>
-app.get('/api/product-areas', async (req, res) => {
-    const { language } = req.query;
-    if (!language) {
-        return res.status(400).json({ error: 'Language query parameter is required' });
-    }
-    const query = `
-        SELECT
-            product_area,
-            COUNT(DISTINCT github_link) AS samples,
-            ROUND(AVG(overall_compliance_score)) AS score
-        FROM \`${table}\`
-        WHERE sample_language = @language
-        GROUP BY product_area
-        ORDER BY samples DESC`;
+
+app.get('/api/languages', async (req, res) => {
+    if (!checkConfig(req, res)) return;
     try {
-        const [rows] = await bigquery.query({ query, params: { language } });
+        const query = `SELECT DISTINCT sample_language FROM \`${tableId}\` ORDER BY sample_language;`;
+        const [rows] = await bigquery.query({ query });
         res.json(rows);
     } catch (error) {
-        console.error('ERROR fetching product areas:', error);
-        res.status(500).json({ error: 'Failed to fetch product areas from BigQuery', details: error.message });
+        console.error('Failed to fetch languages:', error);
+        res.status(500).json({ error: 'Failed to fetch languages from BigQuery.', details: error.message });
     }
 });
 
-// GET /api/region-tags?language=<language>&product_area=<product_area>
-app.get('/api/region-tags', async (req, res) => {
-    const { language, product_area } = req.query;
-    if (!language || !product_area) {
-        return res.status(400).json({ error: 'Language and product_area query parameters are required' });
-    }
-    const query = `
-        SELECT unnested_region_tag, overall_compliance_score
-        FROM (
+app.get('/api/product-areas/:language', async (req, res) => {
+    if (!checkConfig(req, res)) return;
+    const { language } = req.params;
+    try {
+        const query = `
             SELECT
-                unnested_region_tag,
-                overall_compliance_score,
-                ROW_NUMBER() OVER(PARTITION BY unnested_region_tag ORDER BY evaluation_date DESC) as rn
-            FROM \`${table}\`, UNNEST(region_tags) as unnested_region_tag
-            WHERE sample_language = @language AND product_area = @product_area
-        )
-        WHERE rn = 1
-        ORDER BY overall_compliance_score ASC`;
-    try {
-        const [rows] = await bigquery.query({ query, params: { language, product_area } });
-        const formattedRows = rows.map(row => ({ name: row.unnested_region_tag, score: row.overall_compliance_score }));
-        res.json(formattedRows);
+                product_area,
+                COUNT(DISTINCT github_link) AS sample_count,
+                ROUND(AVG(overall_compliance_score), 2) AS average_score
+            FROM \`${tableId}\`
+            WHERE sample_language = @language
+            GROUP BY product_area
+            ORDER BY sample_count DESC;
+        `;
+        const [rows] = await bigquery.query({
+            query,
+            params: { language }
+        });
+        res.json(rows);
     } catch (error) {
-        console.error('ERROR fetching region tags:', error);
-        res.status(500).json({ error: 'Failed to fetch region tags from BigQuery', details: error.message });
+        console.error(`Failed to fetch product areas for ${language}:`, error);
+        res.status(500).json({ error: 'Failed to fetch product areas.', details: error.message });
     }
 });
 
-// GET /api/details?language=<lang>&product_area=<pa>&region_tag=<rt>
-app.get('/api/details', async (req, res) => {
-    const { language, product_area, region_tag } = req.query;
-    if (!language || !product_area || !region_tag) {
-        return res.status(400).json({ error: 'Language, product_area, and region_tag query parameters are required' });
-    }
-    const query = `
-        SELECT *
-        FROM \`${table}\`
-        WHERE 
-            sample_language = @language 
-            AND product_area = @product_area 
-            AND @region_tag IN UNNEST(region_tags)
-        ORDER BY evaluation_date DESC
-        LIMIT 1`;
+app.get('/api/region-tags/:language/:productArea', async (req, res) => {
+    if (!checkConfig(req, res)) return;
+    const { language, productArea } = req.params;
     try {
-        const [rows] = await bigquery.query({ query, params: { language, product_area, region_tag } });
+        const query = `
+            SELECT
+                tag,
+                MAX(t.overall_compliance_score) as overall_compliance_score
+            FROM \`${tableId}\` AS t,
+            UNNEST(region_tags) AS tag
+            WHERE t.sample_language = @language
+            AND t.product_area = @productArea
+            GROUP BY tag
+            ORDER BY overall_compliance_score ASC;
+        `;
+        const [rows] = await bigquery.query({
+            query,
+            params: { language, productArea }
+        });
+        res.json(rows);
+    } catch (error) {
+        console.error(`Failed to fetch region tags for ${productArea}:`, error);
+        res.status(500).json({ error: 'Failed to fetch region tags.', details: error.message });
+    }
+});
+
+
+app.get('/api/details/:language/:productArea/:regionTag', async (req, res) => {
+    if (!checkConfig(req, res)) return;
+    const { language, productArea, regionTag } = req.params;
+
+    try {
+        const query = `
+            SELECT *
+            FROM \`${tableId}\`
+            WHERE sample_language = @language
+                AND product_area = @productArea
+                AND @regionTag IN UNNEST(region_tags)
+            ORDER BY evaluation_date DESC
+            LIMIT 1;
+        `;
+        const [rows] = await bigquery.query({
+            query,
+            params: { language, productArea, regionTag }
+        });
+
         if (rows.length === 0) {
-            return res.status(404).json({ error: 'Details not found for the given selection.' });
+            return res.status(404).json({ error: 'Details not found for the specified tag.' });
         }
+
         const details = rows[0];
-        
-        // FIXED: Safely parse the JSON data.
+
         try {
-            // Attempt to parse the JSON string from BigQuery.
-            details.evaluation_data_raw_json = JSON.parse(details.evaluation_data_raw_json);
-        } catch (parseError) {
-            console.error('ERROR parsing evaluation_data_raw_json:', parseError);
-            // If parsing fails, send back an empty object for the raw data
-            // so the frontend doesn't crash, but can show that data is missing.
-            details.evaluation_data_raw_json = { error: "Failed to parse evaluation data." };
+            if (details.evaluation_data_raw_json) {
+                details.evaluation_data_raw_json = JSON.parse(details.evaluation_data_raw_json);
+            }
+        } catch(jsonError) {
+            console.error('Could not parse evaluation_data_raw_json:', jsonError);
         }
 
         res.json(details);
     } catch (error) {
-        console.error('ERROR fetching details:', error);
-        res.status(500).json({ error: 'Failed to fetch details from BigQuery', details: error.message });
+        console.error(`Failed to fetch details for ${regionTag}:`, error);
+        res.status(500).json({ error: 'Failed to fetch details.', details: error.message });
     }
 });
 
-// GET /api/fetch-code?url=<github_url>
-app.get('/api/fetch-code', async (req, res) => {
-    const { url } = req.query;
-    if (!url) {
-        return res.status(400).json({ error: 'URL query parameter is required.' });
-    }
-    try {
-        const rawUrl = url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
-        const response = await fetch(rawUrl);
-        if (!response.ok) {
-            throw new Error(`GitHub returned status: ${response.status} ${response.statusText}`);
-        }
-        const code = await response.text();
-        res.send(code);
-    } catch (error) {
-        console.error(`ERROR fetching from GitHub URL ${url}:`, error);
-        res.status(500).json({ error: 'Failed to fetch code file from GitHub', details: error.message });
-    }
-});
 
-// --- Start Server ---
 app.listen(port, () => {
     console.log(`Server listening on port ${port}`);
 });
