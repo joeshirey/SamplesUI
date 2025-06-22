@@ -16,14 +16,29 @@ app.use(express.json());
 app.use(express.static('web'));
 
 // --- Google Cloud Setup ---
-const bigquery = new BigQuery();
+const bigquery = new BigQuery({
+    projectId: process.env.PROJECT_ID, // Explicitly set projectId from .env
+});
 const table = process.env.BIGQUERY_TABLE_ID;
 
 if (!table) {
     console.error('FATAL ERROR: BIGQUERY_TABLE_ID is not defined in your .env file.');
     process.exit(1);
 }
+
 // --- API Endpoints ---
+
+// GET /api/config
+app.get('/api/config', (req, res) => {
+    try {
+        const projectId = process.env.PROJECT_ID; // Use PROJECT_ID directly from env
+        const bigqueryView = table;
+        res.json({ projectId, bigqueryView });
+    } catch (error) {
+        console.error('ERROR fetching config:', error);
+        res.status(500).json({ error: 'Failed to fetch config', details: error.message });
+    }
+});
 
 // GET /api/languages
 app.get('/api/languages', async (req, res) => {

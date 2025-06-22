@@ -19,6 +19,7 @@ steps:
     - '--platform=managed'
     - '--allow-unauthenticated' # This makes the service publicly accessible
     - '--set-env-vars=BIGQUERY_TABLE_ID=joeshireylearn-374523.existing_samples.v_all_samples,PROJECT_ID=joeshireylearn-374523'
+#    - '--set-env-vars=BIGQUERY_TABLE_ID=panoply-ai-dev.samples_views.all_samples_view,PROJECT_ID=panoply-ai-dev'
 
 # Store the image name for later builds
 images:

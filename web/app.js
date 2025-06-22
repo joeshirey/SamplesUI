@@ -17,6 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const errorModal = document.getElementById('error-modal');
     const errorMessage = document.getElementById('error-message');
     const closeErrorModalBtn = document.getElementById('close-error-modal');
+    const projectIdDisplay = document.getElementById('project-id-display');
+    const bigqueryViewDisplay = document.getElementById('bigquery-view-display');
 
     // --- State Management ---
     let currentLanguage = null;
@@ -52,8 +54,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 option.textContent = lang.charAt(0).toUpperCase() + lang.slice(1);
                 languageSelect.appendChild(option);
             });
+            await fetchAndDisplayDiagnosticInfo(); // Fetch and display diagnostic info
         } catch (error) {
             showError(`Initialization failed: ${error.message} ${error.stack}`);
+        }
+    }
+
+    /**
+     * Fetches and displays the Project ID and BigQuery view name.
+     */
+    async function fetchAndDisplayDiagnosticInfo() {
+        try {
+            const config = await apiFetch('/config'); // Assuming a new endpoint for config
+            if (config.projectId) {
+                projectIdDisplay.textContent = `Project ID: ${config.projectId}`;
+            }
+            if (config.bigqueryView) {
+                bigqueryViewDisplay.textContent = `BigQuery View: ${config.bigqueryView}`;
+            }
+        } catch (error) {
+            console.warn(`Failed to fetch diagnostic info: ${error.message}`);
+            // Do not show a modal error for diagnostic info, just log to console
         }
     }
 
