@@ -312,7 +312,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div>
                     <h3 class="text-xl font-bold text-gray-800">Overall Score</h3>
                     <p class="text-3xl font-bold ${getScoreColorClass(data.overall_compliance_score)}">${data.overall_compliance_score}</p>
-                    ${data.github_link ? `<p class="text-sm text-blue-600 hover:underline mt-2"><a href="${data.github_link}" target="_blank" rel="noopener noreferrer">View on GitHub</a></p>` : ''}
                 </div>
                 <div class="text-right space-y-2">
                      <div>
@@ -353,15 +352,13 @@ document.addEventListener('DOMContentLoaded', () => {
         
         let codeCardHtml = '<div class="bg-white p-6 rounded-lg shadow-md mb-6"><h3 class="text-xl font-bold mb-4 text-gray-800">Code File</h3>';
         try {
-            if (!data.github_link) throw new Error("GitHub link is missing from the data.");
-            const codeContent = await fetchCodeFromGithub(data.github_link);
+            if (!data.raw_code) throw new Error("Raw code is missing from the data.");
             const validLanguage = hljs.getLanguage(currentLanguage) ? currentLanguage : 'plaintext';
-            const highlightedCode = hljs.highlight(codeContent, { language: validLanguage, ignoreIllegals: true });
+            const highlightedCode = hljs.highlight(data.raw_code, { language: validLanguage, ignoreIllegals: true });
             codeCardHtml += `<pre class="bg-gray-50 p-4 rounded-md"><code class="hljs">${highlightedCode.value}</code></pre>`;
         } catch (error) {
             codeCardHtml += `<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-                <strong class="font-bold">Could not retrieve file.</strong><span class="block sm:inline">${error.message}</span>
-                <p class="mt-2">Link: <a href="${data.github_link}" target="_blank" class="text-blue-500 hover:underline">${data.github_link || 'N/A'}</a></p>
+                <strong class="font-bold">Could not retrieve code.</strong><span class="block sm:inline">${error.message}</span>
             </div>`;
         }
         codeCardHtml += '</div>';
@@ -393,14 +390,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function fetchProductAreas(language) { return apiFetch(`/product-areas?language=${encodeURIComponent(language)}`); }
     function fetchRegionTags(language, productArea) { return apiFetch(`/region-tags?language=${encodeURIComponent(language)}&product_area=${encodeURIComponent(productArea)}`); }
     function fetchEvaluationDetails(language, productArea, regionTag) { return apiFetch(`/details?language=${encodeURIComponent(language)}&product_area=${encodeURIComponent(productArea)}&region_tag=${encodeURIComponent(regionTag)}`); }
-    async function fetchCodeFromGithub(url) {
-        const response = await fetch(`${API_BASE_URL}/fetch-code?url=${encodeURIComponent(url)}`);
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.details || errorData.error || 'Failed to fetch code via proxy');
-        }
-        return response.text();
-    }
 
     // --- UI Utility Functions ---
     function clearProductAreaList() { productAreaList.innerHTML = '<p class="text-gray-500">Select a language to see product areas.</p>'; }
