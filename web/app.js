@@ -312,6 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div>
                     <h3 class="text-xl font-bold text-gray-800">Overall Score</h3>
                     <p class="text-3xl font-bold ${getScoreColorClass(data.overall_compliance_score)}">${data.overall_compliance_score}</p>
+                    ${data.github_link ? `<p class="text-sm text-blue-600 hover:underline mt-2"><a href="${data.github_link}" target="_blank" rel="noopener noreferrer">View on GitHub</a></p>` : ''}
                 </div>
                 <div class="text-right space-y-2">
                      <div>
