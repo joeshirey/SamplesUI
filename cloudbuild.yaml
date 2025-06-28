@@ -13,13 +13,13 @@ steps:
   args:
     - 'run'
     - 'deploy'
-    - 'code-quality-dashboard-gen' # This will be the name of your Cloud Run service
+    - 'code-quality-dashboard' # This will be the name of your Cloud Run service
     - '--image=us-central1-docker.pkg.dev/${PROJECT_ID}/code-quality-repo/code-quality-dashboard:$BUILD_ID'
     - '--region=us-central1' # You can change this to your preferred region
     - '--platform=managed'
     - '--allow-unauthenticated' # This makes the service publicly accessible
 #    - '--set-env-vars=BIGQUERY_TABLE_ID=joeshireylearn-374523.existing_samples.v_all_samples,PROJECT_ID=joeshireylearn-374523'
-    - '--set-env-vars=BIGQUERY_TABLE_ID=panoply-ai-dev.samples_views.all_samples_view_generated,PROJECT_ID=panoply-ai-dev'
+    - '--set-env-vars=BIGQUERY_TABLE_ID=joeshireylearn-374523.existing_samples.v_all_samples,PROJECT_ID=joeshireylearn-374523'
 
 # Store the image name for later builds
 images:

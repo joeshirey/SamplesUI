@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const filterText = productAreaFilterInput.value.toLowerCase();
         if (filterText) {
             areasToDisplay = areasToDisplay.filter(area =>
-                area.product_area.toLowerCase().includes(filterText)
+                area.product_name.toLowerCase().includes(filterText)
             );
         }
 
@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
         areasToDisplay.sort((a, b) => {
             switch (sortOption) {
                 case 'name':
-                    return a.product_area.localeCompare(b.product_area);
+                    return a.product_name.localeCompare(b.product_name);
                 case 'count-desc':
                     return b.samples - a.samples;
                 case 'count-asc':
@@ -224,12 +224,12 @@ document.addEventListener('DOMContentLoaded', () => {
             item.className = 'product-area-item p-3 rounded-lg hover:bg-gray-100 cursor-pointer border';
             item.innerHTML = `
                 <div class="flex justify-between items-center">
-                    <span class="font-semibold text-gray-800">${area.product_area}</span>
+                    <span class="font-semibold text-gray-800">${area.product_name}</span>
                     <span class="text-sm text-gray-600">Score: ${Math.round(area.score)}</span>
                 </div>
                 <div class="text-sm text-gray-500 mt-1">Samples: ${area.samples}</div>
             `;
-            item.addEventListener('click', (event) => handleProductAreaClick(event.currentTarget, area.product_area));
+            item.addEventListener('click', (event) => handleProductAreaClick(event.currentTarget, area.product_name));
             productAreaList.appendChild(item);
         });
     }
@@ -388,8 +388,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function fetchLanguages() { return apiFetch('/languages'); }
     function fetchProductAreas(language) { return apiFetch(`/product-areas?language=${encodeURIComponent(language)}`); }
-    function fetchRegionTags(language, productArea) { return apiFetch(`/region-tags?language=${encodeURIComponent(language)}&product_area=${encodeURIComponent(productArea)}`); }
-    function fetchEvaluationDetails(language, productArea, regionTag) { return apiFetch(`/details?language=${encodeURIComponent(language)}&product_area=${encodeURIComponent(productArea)}&region_tag=${encodeURIComponent(regionTag)}`); }
+    function fetchRegionTags(language, productArea) { return apiFetch(`/region-tags?language=${encodeURIComponent(language)}&product_name=${encodeURIComponent(productArea)}`); }
+    function fetchEvaluationDetails(language, productArea, regionTag) { return apiFetch(`/details?language=${encodeURIComponent(language)}&product_name=${encodeURIComponent(productArea)}&region_tag=${encodeURIComponent(regionTag)}`); }
 
     // --- UI Utility Functions ---
     function clearProductAreaList() { productAreaList.innerHTML = '<p class="text-gray-500">Select a language to see product areas.</p>'; }
