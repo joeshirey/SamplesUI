@@ -60,6 +60,7 @@ The Code Quality Dashboard is a web-based tool designed to provide developers an
 *   **NFR-2: Usability:** The user interface should be intuitive and easy to navigate.
 *   **NFR-3: Scalability:** The backend should be able to handle a growing amount of data in BigQuery without a significant degradation in performance.
 *   **NFR-4: Reliability:** The application should be available and functioning correctly during normal working hours.
+*   **NFR-5: Maintainability:** The codebase should be clean, well-documented, and easy to maintain. This includes using consistent code formatting and linting rules.
 
 ## 6. Future Enhancements
 

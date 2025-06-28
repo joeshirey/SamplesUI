@@ -42,6 +42,7 @@ The backend exposes the following API endpoints:
 *   `GET /api/region-tags`: Returns a list of region tags for a given language and product area.
 *   `GET /api/details`: Returns the detailed evaluation data for a given language, product area, and region tag.
 *   `GET /api/fetch-code`: Fetches the raw code file from a given GitHub URL.
+*   `GET /healthz`: A health check endpoint that returns a 200 OK response.
 
 ### 3.3. Project Structure (Proposed)
 
@@ -58,6 +59,14 @@ To improve maintainability, the backend code should be refactored into the follo
 ├── server.js         # Main application entry point
 └── ...
 ```
+
+### 3.4. Code Quality
+
+To ensure a high level of code quality and consistency, the project will use the following tools:
+
+*   **ESLint:** A static analysis tool for identifying and reporting on patterns found in ECMAScript/JavaScript code.
+*   **Prettier:** An opinionated code formatter that enforces a consistent style.
+*   **`.nvmrc`:** A file that specifies the recommended Node.js version for the project, ensuring a consistent development environment.
 
 ## 4. Frontend Design
 

@@ -39,6 +39,20 @@ npm start
 
 The application should now be running at `http://localhost:8080`.
 
+### 1.4. Code Quality
+
+This project uses ESLint and Prettier to enforce code quality and a consistent style.
+
+*   **Linting:** To check for linting errors, run:
+    ```bash
+    npm run lint
+    ```
+
+*   **Formatting:** To automatically format the code, run:
+    ```bash
+    npm run format
+    ```
+
 ## 2. Google Cloud Setup
 
 ### 2.1. Enable APIs

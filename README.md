@@ -55,6 +55,20 @@ npm start
 
 The application will be available at [http://localhost:8080](http://localhost:8080).
 
+## Code Quality
+
+This project uses ESLint and Prettier to enforce code quality and a consistent style.
+
+*   **Linting:** To check for linting errors, run:
+    ```bash
+    npm run lint
+    ```
+
+*   **Formatting:** To automatically format the code, run:
+    ```bash
+    npm run format
+    ```
+
 ## 🐳 Docker
 
 The project includes a `Dockerfile` that can be used to build a Docker image of the application.
