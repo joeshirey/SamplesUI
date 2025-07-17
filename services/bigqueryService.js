@@ -36,7 +36,7 @@ async function getRegionTags(language, product_name) {
             SELECT
                 unnested_region_tag,
                 overall_compliance_score,
-                ROW_NUMBER() OVER(PARTITION BY unnested_region_tag ORDER BY evaluation_date DESC) as rn
+                ROW_NUMBER() OVER(PARTITION BY unnested_region_tag ORDER BY evaluation_date DESC, github_link DESC) as rn
             FROM \`${table}\`, UNNEST(region_tags) as unnested_region_tag
             WHERE sample_language = @language AND product_name = @product_name
         )
@@ -60,7 +60,7 @@ async function getDetails(language, product_name, region_tag) {
             sample_language = @language 
             AND product_name = @product_name 
             AND @region_tag IN UNNEST(region_tags)
-        ORDER BY evaluation_date DESC
+        ORDER BY evaluation_date DESC, github_link DESC
         LIMIT 1`;
     const [rows] = await bigquery.query({
         query,
