@@ -11,7 +11,9 @@ const config = {
 
 // Validate essential configuration
 if (!config.bigquery.tableId) {
-    console.error('FATAL ERROR: BIGQUERY_TABLE_ID is not defined in your .env file.');
+    console.error(
+        'FATAL ERROR: BIGQUERY_TABLE_ID is not defined in your .env file.'
+    );
     process.exit(1);
 }
 

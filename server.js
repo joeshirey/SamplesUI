@@ -28,9 +28,9 @@ app.use('/api', apiRoutes);
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
     console.error('UNHANDLED ERROR:', err);
-    res.status(500).json({ 
-        error: 'An unexpected server error occurred.', 
-        details: err.message 
+    res.status(500).json({
+        error: 'An unexpected server error occurred.',
+        details: err.message,
     });
 });
 

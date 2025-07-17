@@ -8,16 +8,16 @@ The Code Quality Dashboard is a web-based tool that provides a comprehensive ove
 
 For detailed information about the project, please refer to the following documents in the [`docs`](/docs) directory:
 
-*   **[Product Requirements Document (PRD)](/docs/PRD.md):** An overview of the project's goals, features, and target audience.
-*   **[Technical Design Document (TDD)](/docs/TDD.md):** A detailed description of the project's architecture and technical design.
-*   **[Deployment Instructions](/docs/deployment_instructions.md):** Step-by-step instructions on how to deploy the application to Google Cloud.
+-   **[Product Requirements Document (PRD)](/docs/PRD.md):** An overview of the project's goals, features, and target audience.
+-   **[Technical Design Document (TDD)](/docs/TDD.md):** A detailed description of the project's architecture and technical design.
+-   **[Deployment Instructions](/docs/deployment_instructions.md):** Step-by-step instructions on how to deploy the application to Google Cloud.
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-*   [Node.js](https://nodejs.org/) installed on your machine.
-*   A Google Cloud project with a BigQuery table containing the code quality data.
+-   [Node.js](https://nodejs.org/) installed on your machine.
+-   A Google Cloud project with a BigQuery table containing the code quality data.
 
 ### 1. Clone the Repository
 
@@ -28,15 +28,25 @@ cd your-repository
 
 ### 2. Create a `.env` File
 
-Create a `.env` file in the root of the project and add the following environment variables:
+Create a `.env` file by copying the sample file:
+
+```bash
+cp .env.sample .env
+```
+
+Now, open the `.env` file and add your specific configuration:
 
 ```
+# The port the server will listen on (optional, defaults to 8080).
+PORT=8080
+
+# Your Google Cloud Project ID.
 PROJECT_ID=your-gcp-project-id
-BIGQUERY_TABLE_ID=your-bigquery-table-id
-```
 
-*   `PROJECT_ID`: Your Google Cloud project ID.
-*   `BIGQUERY_TABLE_ID`: The full ID of your BigQuery table (e.g., `your-project.your_dataset.your_table`).
+# The full BigQuery table or view ID to query against.
+# Format: your-gcp-project-id.your_dataset.your_table_or_view
+BIGQUERY_TABLE_ID=your-gcp-project-id.your_dataset.your_table_or_view
+```
 
 ### 3. Authenticate with Google Cloud
 
@@ -55,16 +65,19 @@ npm start
 
 The application will be available at [http://localhost:8080](http://localhost:8080).
 
-## Code Quality
+## ✨ Code Quality
 
 This project uses ESLint and Prettier to enforce code quality and a consistent style.
 
-*   **Linting:** To check for linting errors, run:
+-   **Linting:** To check for linting errors, run:
     ```bash
     npm run lint
     ```
-
-*   **Formatting:** To automatically format the code, run:
+    To automatically fix fixable issues, run:
+    ```bash
+    npm run lint:fix
+    ```
+-   **Formatting:** To automatically format the entire codebase, run:
     ```bash
     npm run format
     ```
@@ -81,10 +94,12 @@ docker build -t code-quality-dashboard .
 
 ### Run the Container
 
+When running the container, you must provide the necessary environment variables. You can do this using a `.env` file and the `--env-file` flag.
+
 ```bash
-docker run -p 8080:8080 -v $(pwd)/.env:/.env code-quality-dashboard
+docker run -p 8080:8080 --env-file ./.env code-quality-dashboard
 ```
 
 ## ☁️ Deployment
 
-For detailed deployment instructions, please refer to the [Deployment Instructions](/docs/deployment_instructions.md) document. 
+For detailed deployment instructions, please refer to the [Deployment Instructions](/docs/deployment_instructions.md) document.

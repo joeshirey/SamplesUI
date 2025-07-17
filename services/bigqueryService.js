@@ -12,7 +12,7 @@ const table = config.bigquery.tableId;
 async function getLanguages() {
     const query = `SELECT DISTINCT sample_language FROM \`${table}\` ORDER BY sample_language`;
     const [rows] = await bigquery.query({ query });
-    return rows.map(row => row.sample_language);
+    return rows.map((row) => row.sample_language);
 }
 
 async function getProductAreas(language) {
@@ -42,8 +42,14 @@ async function getRegionTags(language, product_name) {
         )
         WHERE rn = 1
         ORDER BY overall_compliance_score ASC`;
-    const [rows] = await bigquery.query({ query, params: { language, product_name } });
-    return rows.map(row => ({ name: row.unnested_region_tag, score: row.overall_compliance_score }));
+    const [rows] = await bigquery.query({
+        query,
+        params: { language, product_name },
+    });
+    return rows.map((row) => ({
+        name: row.unnested_region_tag,
+        score: row.overall_compliance_score,
+    }));
 }
 
 async function getDetails(language, product_name, region_tag) {
@@ -56,16 +62,23 @@ async function getDetails(language, product_name, region_tag) {
             AND @region_tag IN UNNEST(region_tags)
         ORDER BY evaluation_date DESC
         LIMIT 1`;
-    const [rows] = await bigquery.query({ query, params: { language, product_name, region_tag } });
+    const [rows] = await bigquery.query({
+        query,
+        params: { language, product_name, region_tag },
+    });
     if (rows.length === 0) {
         return null;
     }
     const details = rows[0];
     try {
-        details.evaluation_data_raw_json = JSON.parse(details.evaluation_data_raw_json);
+        details.evaluation_data_raw_json = JSON.parse(
+            details.evaluation_data_raw_json
+        );
     } catch (parseError) {
         console.error('ERROR parsing evaluation_data_raw_json:', parseError);
-        details.evaluation_data_raw_json = { error: "Failed to parse evaluation data." };
+        details.evaluation_data_raw_json = {
+            error: 'Failed to parse evaluation data.',
+        };
     }
     return details;
 }

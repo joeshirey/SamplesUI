@@ -10,9 +10,9 @@ const config = require('../config');
 // GET /api/config
 // Errors are now handled by the centralized error handler
 router.get('/config', (req, res) => {
-    res.json({ 
-        projectId: config.bigquery.projectId, 
-        bigqueryView: config.bigquery.tableId 
+    res.json({
+        projectId: config.bigquery.projectId,
+        bigqueryView: config.bigquery.tableId,
     });
 });
 
@@ -28,7 +28,9 @@ router.get('/languages', async (req, res) => {
 router.get('/product-areas', async (req, res) => {
     const { language } = req.query;
     if (!language) {
-        return res.status(400).json({ error: 'Language query parameter is required' });
+        return res
+            .status(400)
+            .json({ error: 'Language query parameter is required' });
     }
     const productAreas = await bigqueryService.getProductAreas(language);
     res.json(productAreas);
@@ -39,9 +41,14 @@ router.get('/product-areas', async (req, res) => {
 router.get('/region-tags', async (req, res) => {
     const { language, product_name } = req.query;
     if (!language || !product_name) {
-        return res.status(400).json({ error: 'Language and product_name query parameters are required' });
+        return res.status(400).json({
+            error: 'Language and product_name query parameters are required',
+        });
     }
-    const regionTags = await bigqueryService.getRegionTags(language, product_name);
+    const regionTags = await bigqueryService.getRegionTags(
+        language,
+        product_name
+    );
     res.json(regionTags);
 });
 
@@ -50,11 +57,19 @@ router.get('/region-tags', async (req, res) => {
 router.get('/details', async (req, res) => {
     const { language, product_name, region_tag } = req.query;
     if (!language || !product_name || !region_tag) {
-        return res.status(400).json({ error: 'Language, product_name, and region_tag query parameters are required' });
+        return res.status(400).json({
+            error: 'Language, product_name, and region_tag query parameters are required',
+        });
     }
-    const details = await bigqueryService.getDetails(language, product_name, region_tag);
+    const details = await bigqueryService.getDetails(
+        language,
+        product_name,
+        region_tag
+    );
     if (!details) {
-        return res.status(404).json({ error: 'Details not found for the given selection.' });
+        return res
+            .status(404)
+            .json({ error: 'Details not found for the given selection.' });
     }
     res.json(details);
 });
@@ -64,13 +79,19 @@ router.get('/details', async (req, res) => {
 router.get('/fetch-code', async (req, res) => {
     const { url } = req.query;
     if (!url) {
-        return res.status(400).json({ error: 'URL query parameter is required.' });
+        return res
+            .status(400)
+            .json({ error: 'URL query parameter is required.' });
     }
-    const rawUrl = url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
+    const rawUrl = url
+        .replace('github.com', 'raw.githubusercontent.com')
+        .replace('/blob/', '/');
     const response = await fetch(rawUrl);
     if (!response.ok) {
         // Create an error object to be caught by the central handler
-        const error = new Error(`GitHub returned status: ${response.status} ${response.statusText}`);
+        const error = new Error(
+            `GitHub returned status: ${response.status} ${response.statusText}`
+        );
         error.status = response.status;
         throw error;
     }

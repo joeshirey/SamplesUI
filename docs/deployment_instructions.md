@@ -4,10 +4,10 @@ This document provides instructions on how to deploy the Code Quality Dashboard 
 
 ## Prerequisites
 
-*   A Google Cloud project with billing enabled.
-*   The `gcloud` command-line tool installed and configured.
-*   A GitHub repository containing the application source code.
-*   A BigQuery table with the code quality data.
+-   A Google Cloud project with billing enabled.
+-   The `gcloud` command-line tool installed and configured.
+-   A GitHub repository containing the application source code.
+-   A BigQuery table with the code quality data.
 
 ## 1. Local Setup
 
@@ -20,15 +20,13 @@ cd your-repository
 
 ### 1.2. Create a `.env` File
 
-Create a `.env` file in the root of the project and add the following environment variables:
+Create a `.env` file by copying the sample file. This file is used for local development and is not committed to the repository.
 
-```
-PROJECT_ID=your-gcp-project-id
-BIGQUERY_TABLE_ID=your-bigquery-table-id
+```bash
+cp .env.sample .env
 ```
 
-*   `PROJECT_ID`: Your Google Cloud project ID.
-*   `BIGQUERY_TABLE_ID`: The full ID of your BigQuery table (e.g., `your-project.your_dataset.your_table`).
+Open the `.env` file and add your specific configuration values.
 
 ### 1.3. Install Dependencies and Run Locally
 
@@ -39,20 +37,6 @@ npm start
 
 The application should now be running at `http://localhost:8080`.
 
-### 1.4. Code Quality
-
-This project uses ESLint and Prettier to enforce code quality and a consistent style.
-
-*   **Linting:** To check for linting errors, run:
-    ```bash
-    npm run lint
-    ```
-
-*   **Formatting:** To automatically format the code, run:
-    ```bash
-    npm run format
-    ```
-
 ## 2. Google Cloud Setup
 
 ### 2.1. Enable APIs
@@ -62,6 +46,7 @@ Enable the required Google Cloud APIs for your project:
 ```bash
 gcloud services enable run.googleapis.com
 gcloud services enable cloudbuild.googleapis.com
+gcloud services enable artifactregistry.googleapis.com
 gcloud services enable bigquery.googleapis.com
 ```
 
@@ -88,9 +73,20 @@ The project includes a `cloudbuild.yaml` file that defines the CI/CD pipeline. T
 
 1.  Build the Docker image.
 2.  Push the image to Google Artifact Registry.
-3.  Deploy the image to Cloud Run.
+3.  Deploy the image to Cloud Run, injecting environment variables as secrets or directly.
 
-### 3.1. Create a Cloud Build Trigger
+### 3.1. Set Environment Variables in Cloud Run
+
+When deploying to Cloud Run (either manually or via Cloud Build), you must provide the necessary environment variables. It is highly recommended to use a secrets manager like [Secret Manager](https://cloud.google.com/secret-manager) for sensitive values.
+
+The required variables are:
+-   `PROJECT_ID`
+-   `BIGQUERY_TABLE_ID`
+-   `PORT` (optional, Cloud Run sets this automatically)
+
+You will need to configure these in the "Variables & Secrets" section of your Cloud Run service.
+
+### 3.2. Create a Cloud Build Trigger
 
 1.  Go to the Cloud Build Triggers page in the Google Cloud Console.
 2.  Click "Create trigger".
@@ -101,16 +97,17 @@ The project includes a `cloudbuild.yaml` file that defines the CI/CD pipeline. T
 7.  Enter `cloudbuild.yaml` as the location of the configuration file.
 8.  Click "Create".
 
-### 3.2. Trigger a Build
+### 3.3. Trigger a Build
 
 To trigger a build, push a commit to the branch you configured in the trigger. Cloud Build will automatically build and deploy the application.
 
 ## 4. Manual Deployment
 
-To deploy the application manually, you can use the `gcloud` command-line tool:
+To deploy the application manually, you can use the `gcloud` command-line tool. Make sure to replace the placeholder values for the environment variables.
 
 ```bash
-gcloud builds submit --config cloudbuild.yaml .
+gcloud builds submit --config cloudbuild.yaml . \
+    --substitutions=_SERVICE_NAME=code-quality-dashboard,_REGION=us-central1
 ```
 
 This will execute the steps defined in the `cloudbuild.yaml` file and deploy the application to Cloud Run.
