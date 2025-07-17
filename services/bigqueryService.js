@@ -1,14 +1,11 @@
 const { BigQuery } = require('@google-cloud/bigquery');
+const config = require('../config');
 
 // --- Google Cloud Setup ---
 const bigquery = new BigQuery({
-    projectId: process.env.PROJECT_ID, // Explicitly set projectId from .env
+    projectId: config.bigquery.projectId,
 });
-const table = process.env.BIGQUERY_TABLE_ID;
-
-if (!table) {
-    console.error('FATAL ERROR: BIGQUERY_TABLE_ID is not defined. This will cause the API to fail.');
-}
+const table = config.bigquery.tableId;
 
 // --- Service Functions ---
 

@@ -3,15 +3,17 @@
 const express = require('express');
 const router = express.Router();
 const bigqueryService = require('../services/bigqueryService');
+const config = require('../config');
 
 // --- API Endpoints ---
 
 // GET /api/config
 router.get('/config', (req, res) => {
     try {
-        const projectId = process.env.PROJECT_ID;
-        const bigqueryView = process.env.BIGQUERY_TABLE_ID;
-        res.json({ projectId, bigqueryView });
+        res.json({ 
+            projectId: config.bigquery.projectId, 
+            bigqueryView: config.bigquery.tableId 
+        });
     } catch (error) {
         console.error('ERROR fetching config:', error);
         res.status(500).json({ error: 'Failed to fetch config', details: error.message });
