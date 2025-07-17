@@ -1,4 +1,10 @@
 // config/index.js
+
+/**
+ * Centralized application configuration.
+ * Loads environment variables from a .env file and exports a structured config object.
+ * Provides a single source of truth for configuration values.
+ */
 require('dotenv').config();
 
 const config = {
@@ -9,7 +15,7 @@ const config = {
     },
 };
 
-// Validate essential configuration
+// Fail-fast validation for essential configuration.
 if (!config.bigquery.tableId) {
     console.error(
         'FATAL ERROR: BIGQUERY_TABLE_ID is not defined in your .env file.'

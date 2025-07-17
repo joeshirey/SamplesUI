@@ -1,30 +1,28 @@
-// server.js - Backend for Code Quality Dashboard
+// server.js
 
-// Load environment variables from .env file
-require('dotenv').config();
-
+/**
+ * Main application server.
+ * Initializes Express, configures middleware, mounts API routes,
+ * and starts the HTTP server.
+ */
 const express = require('express');
 const cors = require('cors');
 const config = require('./config');
-const apiRoutes = require('./routes/api'); // Import the new router
+const apiRoutes = require('./routes/api');
 
 const app = express();
-const port = config.port;
 
-// --- Middleware ---
-app.use(cors());
-app.use(express.json());
-app.use(express.static('web'));
-
-// --- Google Cloud Pre-check ---
-// The pre-check is now handled in the config module.
+// --- Middleware Setup ---
+app.use(cors()); // Enable CORS for all origins.
+app.use(express.json()); // Parse JSON request bodies.
+app.use(express.static('web')); // Serve static frontend assets.
 
 // --- API Routes ---
-// All API routes are now handled by the api.js module
-app.use('/api', apiRoutes);
+app.use('/api', apiRoutes); // Mount all API endpoints under the /api prefix.
 
 // --- Centralized Error Handling ---
-// This middleware catches any errors that occur in the route handlers.
+// A catch-all error handler. Any error passed to next() will be handled here.
+// The `next` parameter is unused but required for Express to identify this as an error handler.
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
     console.error('UNHANDLED ERROR:', err);
@@ -34,7 +32,7 @@ app.use((err, req, res, next) => {
     });
 });
 
-// --- Start Server ---
-app.listen(port, () => {
-    console.log(`Server listening on port ${port}`);
+// --- Server Initialization ---
+app.listen(config.port, () => {
+    console.log(`Server listening on port ${config.port}`);
 });
