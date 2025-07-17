@@ -5,6 +5,7 @@
     "main": "server.js",
     "scripts": {
         "start": "node server.js",
+        "dev": "nodemon server.js",
         "lint": "eslint .",
         "lint:fix": "eslint . --fix",
         "format": "prettier --write '**/*.{js,json,md}'",
@@ -23,6 +24,7 @@
         "eslint-config-prettier": "^10.1.5",
         "eslint-plugin-prettier": "^5.5.1",
         "jest": "^30.0.4",
+        "nodemon": "^3.1.10",
         "prettier": "^3.6.2",
         "supertest": "^7.1.3"
     }
