@@ -23,6 +23,17 @@ app.use(express.static('web'));
 // All API routes are now handled by the api.js module
 app.use('/api', apiRoutes);
 
+// --- Centralized Error Handling ---
+// This middleware catches any errors that occur in the route handlers.
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+    console.error('UNHANDLED ERROR:', err);
+    res.status(500).json({ 
+        error: 'An unexpected server error occurred.', 
+        details: err.message 
+    });
+});
+
 // --- Start Server ---
 app.listen(port, () => {
     console.log(`Server listening on port ${port}`);
