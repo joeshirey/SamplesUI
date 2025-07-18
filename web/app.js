@@ -331,11 +331,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (Array.isArray(summaryData) && summaryData.length > 0) {
             items = summaryData;
         } else if (typeof summaryData === 'string' && summaryData) {
-            items = summaryData.split('\n').filter(line => line.trim() !== '');
+            items = summaryData
+                .split('\n')
+                .filter((line) => line.trim() !== '');
         }
 
         if (items.length > 0) {
-            const listItems = items.map(item => `<li>${item.trim()}</li>`).join('');
+            const listItems = items
+                .map((item) => `<li>${item.trim()}</li>`)
+                .join('');
             summaryContent = `<ul class="list-disc list-outside pl-5">${listItems}</ul>`;
         } else {
             summaryContent = '<p>No fixes suggested</p>';
@@ -388,10 +392,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="space-y-3">
                     ${(evalJson.criteria_breakdown || [])
                         .map((criterion) => {
-                            let recommendationText = criterion.recommendations_for_llm_fix || 'N/A';
+                            let recommendationText =
+                                criterion.recommendations_for_llm_fix || 'N/A';
                             // If recommendations are an array, convert to a Markdown list.
                             if (Array.isArray(recommendationText)) {
-                                recommendationText = recommendationText.map(item => `- ${item}`).join('\n');
+                                recommendationText = recommendationText
+                                    .map((item) => `- ${item}`)
+                                    .join('\n');
                             }
                             return `
                                 <div class="border rounded-lg p-3 bg-gray-50">
@@ -432,25 +439,31 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${summaryContent}
                 </div>
             </div>`;
-        
+
         let gitHistoryCardHtml = '';
         if (data.git_info_raw_json) {
             try {
                 let gitHistory = JSON.parse(data.git_info_raw_json);
-                
-                const validHistory = gitHistory.filter(item => {
-                    const d = new Date(item.date);
-                    return d instanceof Date && !isNaN(d);
-                }).sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                const validHistory = gitHistory
+                    .filter((item) => {
+                        const d = new Date(item.date);
+                        return d instanceof Date && !isNaN(d);
+                    })
+                    .sort((a, b) => new Date(b.date) - new Date(a.date));
 
                 if (validHistory.length > 0) {
-                    const historyRows = validHistory.map(item => `
+                    const historyRows = validHistory
+                        .map(
+                            (item) => `
                         <tr class="border-b">
                             <td class="py-2 px-4 text-sm text-gray-600">${new Date(item.date).toLocaleDateString()}</td>
                             <td class="py-2 px-4 text-sm text-gray-600">${item.author_name}</td>
                             <td class="py-2 px-4 text-sm text-gray-600">${item.message}</td>
                         </tr>
-                    `).join('');
+                    `
+                        )
+                        .join('');
 
                     gitHistoryCardHtml = `
                         <div class="bg-white p-6 rounded-lg shadow-md">
@@ -472,13 +485,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>`;
                 }
             } catch (e) {
-                console.error("Failed to parse git_info_raw_json:", e);
+                console.error('Failed to parse git_info_raw_json:', e);
                 // Do not render the card if parsing fails
             }
         }
 
         detailViewContent.innerHTML =
-            headerHtml + analysisCardHtml + codeCardHtml + summaryCardHtml + gitHistoryCardHtml;
+            headerHtml +
+            analysisCardHtml +
+            codeCardHtml +
+            summaryCardHtml +
+            gitHistoryCardHtml;
     }
 
     // --- API Fetching ---
