@@ -9,7 +9,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Constants and DOM References ---
     const API_BASE_URL = '/api';
     const languageSelect = document.getElementById('language-select');
-    const productAreaFilterInput = document.getElementById('product-area-filter');
+    const productAreaFilterInput = document.getElementById(
+        'product-area-filter'
+    );
     const productAreaSortSelect = document.getElementById('product-area-sort');
     const productAreaList = document.getElementById('product-area-list');
     const regionTagFilterInput = document.getElementById('region-tag-filter');
@@ -21,7 +23,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const errorMessage = document.getElementById('error-message');
     const closeErrorModalBtn = document.getElementById('close-error-modal');
     const projectIdDisplay = document.getElementById('project-id-display');
-    const bigqueryViewDisplay = document.getElementById('bigquery-view-display');
+    const bigqueryViewDisplay = document.getElementById(
+        'bigquery-view-display'
+    );
 
     // --- Application State ---
     let currentLanguage = null;
@@ -32,12 +36,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Event Listeners ---
     languageSelect.addEventListener('change', handleLanguageChange);
-    productAreaFilterInput.addEventListener('input', applyProductAreaFiltersAndSorting);
-    productAreaSortSelect.addEventListener('change', applyProductAreaFiltersAndSorting);
-    regionTagFilterInput.addEventListener('input', applyRegionTagFiltersAndSorting);
-    regionTagSortSelect.addEventListener('change', applyRegionTagFiltersAndSorting);
+    productAreaFilterInput.addEventListener(
+        'input',
+        applyProductAreaFiltersAndSorting
+    );
+    productAreaSortSelect.addEventListener(
+        'change',
+        applyProductAreaFiltersAndSorting
+    );
+    regionTagFilterInput.addEventListener(
+        'input',
+        applyRegionTagFiltersAndSorting
+    );
+    regionTagSortSelect.addEventListener(
+        'change',
+        applyRegionTagFiltersAndSorting
+    );
     copyLinkButton.addEventListener('click', copyCurrentLink);
-    closeErrorModalBtn.addEventListener('click', () => errorModal.classList.add('hidden'));
+    closeErrorModalBtn.addEventListener('click', () =>
+        errorModal.classList.add('hidden')
+    );
 
     // --- Initialization ---
 
@@ -47,12 +65,14 @@ document.addEventListener('DOMContentLoaded', () => {
     async function initializeApp() {
         try {
             const languages = await fetchLanguages();
-            languageSelect.innerHTML = '<option selected disabled>Select a Language</option>';
+            languageSelect.innerHTML =
+                '<option selected disabled>Select a Language</option>';
             languages.forEach((lang) => {
                 if (!lang) return;
                 const option = document.createElement('option');
                 option.value = lang;
-                option.textContent = lang.charAt(0).toUpperCase() + lang.slice(1);
+                option.textContent =
+                    lang.charAt(0).toUpperCase() + lang.slice(1);
                 languageSelect.appendChild(option);
             });
             await fetchAndDisplayDiagnosticInfo();
@@ -67,8 +87,10 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchAndDisplayDiagnosticInfo() {
         try {
             const config = await apiFetch('/config');
-            if (config.projectId) projectIdDisplay.textContent = `Project ID: ${config.projectId}`;
-            if (config.bigqueryView) bigqueryViewDisplay.textContent = `BigQuery View: ${config.bigqueryView}`;
+            if (config.projectId)
+                projectIdDisplay.textContent = `Project ID: ${config.projectId}`;
+            if (config.bigqueryView)
+                bigqueryViewDisplay.textContent = `BigQuery View: ${config.bigqueryView}`;
         } catch (error) {
             // This is non-critical, so we log to console instead of showing a user-facing error.
             console.warn(`Failed to fetch diagnostic info: ${error.message}`);
@@ -88,7 +110,8 @@ document.addEventListener('DOMContentLoaded', () => {
         clearProductAreaList();
         clearRegionTagList();
         clearDetailView();
-        productAreaList.innerHTML = '<p class="text-gray-500">Loading product areas...</p>';
+        productAreaList.innerHTML =
+            '<p class="text-gray-500">Loading product areas...</p>';
         productAreaFilterInput.value = '';
         regionTagFilterInput.value = '';
 
@@ -96,7 +119,9 @@ document.addEventListener('DOMContentLoaded', () => {
             allProductAreas = await fetchProductAreas(currentLanguage);
             applyProductAreaFiltersAndSorting();
         } catch (error) {
-            showError(`Failed to fetch product areas for ${currentLanguage}: ${error.message}`);
+            showError(
+                `Failed to fetch product areas for ${currentLanguage}: ${error.message}`
+            );
             productAreaList.innerHTML = `<p class="text-red-500">Error loading data.</p>`;
         }
     }
@@ -108,19 +133,27 @@ document.addEventListener('DOMContentLoaded', () => {
         currentProductArea = productAreaName;
 
         // Highlight the selected item for better UX.
-        document.querySelectorAll('#product-area-list .product-area-item').forEach((item) => item.classList.remove('bg-blue-100'));
+        document
+            .querySelectorAll('#product-area-list .product-area-item')
+            .forEach((item) => item.classList.remove('bg-blue-100'));
         clickedElement.classList.add('bg-blue-100');
 
         clearRegionTagList();
         clearDetailView();
-        regionTagList.innerHTML = '<p class="text-gray-500">Loading region tags...</p>';
+        regionTagList.innerHTML =
+            '<p class="text-gray-500">Loading region tags...</p>';
         regionTagFilterInput.value = '';
 
         try {
-            allRegionTags = await fetchRegionTags(currentLanguage, currentProductArea);
+            allRegionTags = await fetchRegionTags(
+                currentLanguage,
+                currentProductArea
+            );
             applyRegionTagFiltersAndSorting();
         } catch (error) {
-            showError(`Failed to fetch region tags for ${currentProductArea}: ${error.message}`);
+            showError(
+                `Failed to fetch region tags for ${currentProductArea}: ${error.message}`
+            );
             regionTagList.innerHTML = `<p class="text-red-500">Error loading data.</p>`;
         }
     }
@@ -131,17 +164,26 @@ document.addEventListener('DOMContentLoaded', () => {
     async function handleRegionTagClick(clickedElement, regionTagName) {
         currentRegionTag = regionTagName;
 
-        document.querySelectorAll('#region-tag-list .region-tag-item').forEach((item) => item.classList.remove('bg-blue-100'));
+        document
+            .querySelectorAll('#region-tag-list .region-tag-item')
+            .forEach((item) => item.classList.remove('bg-blue-100'));
         clickedElement.classList.add('bg-blue-100');
 
         clearDetailView();
-        detailViewContent.innerHTML = '<p class="text-gray-500">Loading details...</p>';
+        detailViewContent.innerHTML =
+            '<p class="text-gray-500">Loading details...</p>';
 
         try {
-            const evaluationData = await fetchEvaluationDetails(currentLanguage, currentProductArea, currentRegionTag);
+            const evaluationData = await fetchEvaluationDetails(
+                currentLanguage,
+                currentProductArea,
+                currentRegionTag
+            );
             renderDetailView(evaluationData);
         } catch (error) {
-            showError(`Failed to fetch details for ${currentRegionTag}: ${error.message}`);
+            showError(
+                `Failed to fetch details for ${currentRegionTag}: ${error.message}`
+            );
             detailViewContent.innerHTML = `<p class="text-red-500">Error loading details.</p>`;
         }
     }
@@ -155,18 +197,26 @@ document.addEventListener('DOMContentLoaded', () => {
         let areasToDisplay = [...allProductAreas];
         const filterText = productAreaFilterInput.value.toLowerCase();
         if (filterText) {
-            areasToDisplay = areasToDisplay.filter((area) => area.product_name.toLowerCase().includes(filterText));
+            areasToDisplay = areasToDisplay.filter((area) =>
+                area.product_name.toLowerCase().includes(filterText)
+            );
         }
 
         const sortOption = productAreaSortSelect.value;
         areasToDisplay.sort((a, b) => {
             switch (sortOption) {
-                case 'name': return a.product_name.localeCompare(b.product_name);
-                case 'count-desc': return b.samples - a.samples;
-                case 'count-asc': return a.samples - b.samples;
-                case 'score-desc': return b.score - a.score;
-                case 'score-asc': return a.score - b.score;
-                default: return 0;
+                case 'name':
+                    return a.product_name.localeCompare(b.product_name);
+                case 'count-desc':
+                    return b.samples - a.samples;
+                case 'count-asc':
+                    return a.samples - b.samples;
+                case 'score-desc':
+                    return b.score - a.score;
+                case 'score-asc':
+                    return a.score - b.score;
+                default:
+                    return 0;
             }
         });
         renderProductAreaList(areasToDisplay);
@@ -179,16 +229,22 @@ document.addEventListener('DOMContentLoaded', () => {
         let tagsToDisplay = [...allRegionTags];
         const filterText = regionTagFilterInput.value.toLowerCase();
         if (filterText) {
-            tagsToDisplay = tagsToDisplay.filter((tag) => tag.name.toLowerCase().includes(filterText));
+            tagsToDisplay = tagsToDisplay.filter((tag) =>
+                tag.name.toLowerCase().includes(filterText)
+            );
         }
 
         const sortOption = regionTagSortSelect.value;
         tagsToDisplay.sort((a, b) => {
             switch (sortOption) {
-                case 'name': return a.name.localeCompare(b.name);
-                case 'score-desc': return b.score - a.score;
-                case 'score-asc': return a.score - b.score;
-                default: return 0;
+                case 'name':
+                    return a.name.localeCompare(b.name);
+                case 'score-desc':
+                    return b.score - a.score;
+                case 'score-asc':
+                    return a.score - b.score;
+                default:
+                    return 0;
             }
         });
         renderRegionTagList(tagsToDisplay);
@@ -201,13 +257,15 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function renderProductAreaList(areas) {
         if (!areas || areas.length === 0) {
-            productAreaList.innerHTML = '<p class="text-gray-500">No matching product areas found.</p>';
+            productAreaList.innerHTML =
+                '<p class="text-gray-500">No matching product areas found.</p>';
             return;
         }
         productAreaList.innerHTML = '';
         areas.forEach((area) => {
             const item = document.createElement('div');
-            item.className = 'product-area-item p-3 rounded-lg hover:bg-gray-100 cursor-pointer border';
+            item.className =
+                'product-area-item p-3 rounded-lg hover:bg-gray-100 cursor-pointer border';
             item.innerHTML = `
                 <div class="flex justify-between items-center">
                     <span class="font-semibold text-gray-800">${area.product_name}</span>
@@ -215,7 +273,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="text-sm text-gray-500 mt-1">Samples: ${area.samples}</div>
             `;
-            item.addEventListener('click', (event) => handleProductAreaClick(event.currentTarget, area.product_name));
+            item.addEventListener('click', (event) =>
+                handleProductAreaClick(event.currentTarget, area.product_name)
+            );
             productAreaList.appendChild(item);
         });
     }
@@ -225,20 +285,24 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function renderRegionTagList(tags) {
         if (!tags || tags.length === 0) {
-            regionTagList.innerHTML = '<p class="text-gray-500">No matching region tags found.</p>';
+            regionTagList.innerHTML =
+                '<p class="text-gray-500">No matching region tags found.</p>';
             return;
         }
         regionTagList.innerHTML = '';
         tags.forEach((tag) => {
             const item = document.createElement('div');
-            item.className = 'region-tag-item p-3 rounded-lg hover:bg-gray-100 cursor-pointer border';
+            item.className =
+                'region-tag-item p-3 rounded-lg hover:bg-gray-100 cursor-pointer border';
             item.innerHTML = `
                 <div class="flex justify-between items-center">
                     <span class="font-medium text-sm text-gray-800 truncate" title="${tag.name}">${tag.name}</span>
                     <span class="text-sm font-bold ${getScoreColorClass(tag.score)}">${tag.score}</span>
                 </div>
             `;
-            item.addEventListener('click', (event) => handleRegionTagClick(event.currentTarget, tag.name));
+            item.addEventListener('click', (event) =>
+                handleRegionTagClick(event.currentTarget, tag.name)
+            );
             regionTagList.appendChild(item);
         });
     }
@@ -263,16 +327,34 @@ document.addEventListener('DOMContentLoaded', () => {
         let summaryListItems;
         const summaryData = evalJson.llm_fix_summary_for_code_generation;
         if (Array.isArray(summaryData) && summaryData.length > 0) {
-            summaryListItems = summaryData.map((item) => `<li>${item}</li>`).join('');
+            summaryListItems = summaryData
+                .map((item) => `<li>${item}</li>`)
+                .join('');
         } else if (typeof summaryData === 'string' && summaryData) {
-            summaryListItems = summaryData.split('\n').filter(line => line.trim() !== '').map((item) => `<li>${item.trim()}</li>`).join('');
-            if (!summaryListItems) summaryListItems = '<li>No summary available.</li>';
+            summaryListItems = summaryData
+                .split('\n')
+                .filter((line) => line.trim() !== '')
+                .map((item) => `<li>${item.trim()}</li>`)
+                .join('');
+            if (!summaryListItems)
+                summaryListItems = '<li>No summary available.</li>';
         } else {
             summaryListItems = '<li>No summary available.</li>';
         }
 
-        const formattedLastUpdatedDate = data.last_updated_date?.value ? new Date(data.last_updated_date.value).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
-        const formattedEvaluationDate = data.evaluation_date?.value ? new Date(data.evaluation_date.value).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
+        const formattedLastUpdatedDate = data.last_updated_date?.value
+            ? new Date(data.last_updated_date.value).toLocaleDateString(
+                  'en-US',
+                  { year: 'numeric', month: 'long', day: 'numeric' }
+              )
+            : 'N/A';
+        const formattedEvaluationDate = data.evaluation_date?.value
+            ? new Date(data.evaluation_date.value).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+              })
+            : 'N/A';
 
         const headerHtml = `
             <div class="flex justify-between items-start mb-4 border-b pb-4">
@@ -305,21 +387,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div>
                     <h4 class="font-semibold text-gray-800 mb-2">Criteria Breakdown:</h4>
                     <div class="space-y-3">
-                    ${(evalJson.criteria_breakdown || []).map((criterion) => `
+                    ${(evalJson.criteria_breakdown || [])
+                        .map(
+                            (criterion) => `
                         <div class="border rounded-lg p-3 bg-gray-50">
                             <p class="font-bold">${criterion.criterion_name || 'N/A'} (Score: ${criterion.score} / Weight: ${criterion.weight})</p>
                             <p class="text-sm text-gray-600 mt-1"><strong>Assessment:</strong> ${criterion.assessment || 'N/A'}</p>
                             <p class="text-sm text-gray-600 mt-1"><strong>Recommendation:</strong> ${criterion.recommendations_for_llm_fix || 'N/A'}</p>
-                        </div>`).join('')}
+                        </div>`
+                        )
+                        .join('')}
                     </div>
                 </div>
             </div>`;
 
-        let codeCardHtml = '<div class="bg-white p-6 rounded-lg shadow-md mb-6"><h3 class="text-xl font-bold mb-4 text-gray-800">Code File</h3>';
+        let codeCardHtml =
+            '<div class="bg-white p-6 rounded-lg shadow-md mb-6"><h3 class="text-xl font-bold mb-4 text-gray-800">Code File</h3>';
         try {
-            if (!data.raw_code) throw new Error('Raw code is missing from the data.');
-            const validLanguage = hljs.getLanguage(currentLanguage) ? currentLanguage : 'plaintext';
-            const highlightedCode = hljs.highlight(data.raw_code, { language: validLanguage, ignoreIllegals: true });
+            if (!data.raw_code)
+                throw new Error('Raw code is missing from the data.');
+            const validLanguage = hljs.getLanguage(currentLanguage)
+                ? currentLanguage
+                : 'plaintext';
+            const highlightedCode = hljs.highlight(data.raw_code, {
+                language: validLanguage,
+                ignoreIllegals: true,
+            });
             codeCardHtml += `<pre class="bg-gray-50 p-4 rounded-md"><code class="hljs">${highlightedCode.value}</code></pre>`;
         } catch (error) {
             codeCardHtml += `<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
@@ -336,7 +429,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>`;
 
-        detailViewContent.innerHTML = headerHtml + analysisCardHtml + codeCardHtml + summaryCardHtml;
+        detailViewContent.innerHTML =
+            headerHtml + analysisCardHtml + codeCardHtml + summaryCardHtml;
     }
 
     // --- API Fetching ---
@@ -348,21 +442,36 @@ document.addEventListener('DOMContentLoaded', () => {
         const response = await fetch(`${API_BASE_URL}${endpoint}`);
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.details || errorData.error || 'API request failed');
+            throw new Error(
+                errorData.details || errorData.error || 'API request failed'
+            );
         }
         return response.json();
     }
 
     const fetchLanguages = () => apiFetch('/languages');
-    const fetchProductAreas = (language) => apiFetch(`/product-areas?language=${encodeURIComponent(language)}`);
-    const fetchRegionTags = (language, productArea) => apiFetch(`/region-tags?language=${encodeURIComponent(language)}&product_name=${encodeURIComponent(productArea)}`);
-    const fetchEvaluationDetails = (language, productArea, regionTag) => apiFetch(`/details?language=${encodeURIComponent(language)}&product_name=${encodeURIComponent(productArea)}&region_tag=${encodeURIComponent(regionTag)}`);
+    const fetchProductAreas = (language) =>
+        apiFetch(`/product-areas?language=${encodeURIComponent(language)}`);
+    const fetchRegionTags = (language, productArea) =>
+        apiFetch(
+            `/region-tags?language=${encodeURIComponent(language)}&product_name=${encodeURIComponent(productArea)}`
+        );
+    const fetchEvaluationDetails = (language, productArea, regionTag) =>
+        apiFetch(
+            `/details?language=${encodeURIComponent(language)}&product_name=${encodeURIComponent(productArea)}&region_tag=${encodeURIComponent(regionTag)}`
+        );
 
     // --- UI Utilities ---
 
-    const clearProductAreaList = () => productAreaList.innerHTML = '<p class="text-gray-500">Select a language to see product areas.</p>';
-    const clearRegionTagList = () => regionTagList.innerHTML = '<p class="text-gray-500">Select a product area to see region tags.</p>';
-    const clearDetailView = () => detailViewContent.innerHTML = '<p class="text-gray-500">Select a region tag to see details.</p>';
+    const clearProductAreaList = () =>
+        (productAreaList.innerHTML =
+            '<p class="text-gray-500">Select a language to see product areas.</p>');
+    const clearRegionTagList = () =>
+        (regionTagList.innerHTML =
+            '<p class="text-gray-500">Select a product area to see region tags.</p>');
+    const clearDetailView = () =>
+        (detailViewContent.innerHTML =
+            '<p class="text-gray-500">Select a region tag to see details.</p>');
 
     function showError(message) {
         console.error(message);
@@ -375,15 +484,22 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function copyCurrentLink() {
         if (!currentLanguage || !currentProductArea || !currentRegionTag) {
-            showError('Please select a language, product area, and region tag to generate a link.');
+            showError(
+                'Please select a language, product area, and region tag to generate a link.'
+            );
             return;
         }
         const link = `${window.location.origin}${window.location.pathname}?lang=${encodeURIComponent(currentLanguage)}&pa=${encodeURIComponent(currentProductArea)}&rt=${encodeURIComponent(currentRegionTag)}`;
-        navigator.clipboard.writeText(link).then(() => {
-            const originalText = copyLinkButton.innerHTML;
-            copyLinkButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg><span>Copied!</span>`;
-            setTimeout(() => { copyLinkButton.innerHTML = originalText; }, 2000);
-        }).catch(err => showError('Failed to copy link: ' + err));
+        navigator.clipboard
+            .writeText(link)
+            .then(() => {
+                const originalText = copyLinkButton.innerHTML;
+                copyLinkButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg><span>Copied!</span>`;
+                setTimeout(() => {
+                    copyLinkButton.innerHTML = originalText;
+                }, 2000);
+            })
+            .catch((err) => showError('Failed to copy link: ' + err));
     }
 
     /**
@@ -401,21 +517,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 languageSelect.value = lang;
                 currentLanguage = lang;
                 await fetchAndDisplayDiagnosticInfo();
-                
+
                 // Fetch and render all levels of data
                 allProductAreas = await fetchProductAreas(currentLanguage);
                 applyProductAreaFiltersAndSorting();
-                
+
                 currentProductArea = pa;
-                allRegionTags = await fetchRegionTags(currentLanguage, currentProductArea);
+                allRegionTags = await fetchRegionTags(
+                    currentLanguage,
+                    currentProductArea
+                );
                 applyRegionTagFiltersAndSorting();
 
                 currentRegionTag = rt;
-                const evaluationData = await fetchEvaluationDetails(currentLanguage, currentProductArea, currentRegionTag);
+                const evaluationData = await fetchEvaluationDetails(
+                    currentLanguage,
+                    currentProductArea,
+                    currentRegionTag
+                );
                 renderDetailView(evaluationData);
-
             } catch (error) {
-                showError(`Failed to load data from URL parameters: ${error.message}`);
+                showError(
+                    `Failed to load data from URL parameters: ${error.message}`
+                );
             }
         }
     }

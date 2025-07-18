@@ -15,7 +15,11 @@ describe('bigqueryService', () => {
     describe('getDetails', () => {
         it('should return null if no rows are found', async () => {
             mockQuery.mockResolvedValue([[]]); // Simulate no rows returned
-            const result = await bigqueryService.getDetails('Go', 'Cloud Run', 'tag');
+            const result = await bigqueryService.getDetails(
+                'Go',
+                'Cloud Run',
+                'tag'
+            );
             expect(result).toBeNull();
         });
 
@@ -26,7 +30,11 @@ describe('bigqueryService', () => {
             };
             mockQuery.mockResolvedValue([[mockRow]]);
 
-            const result = await bigqueryService.getDetails('Go', 'Cloud Run', 'tag');
+            const result = await bigqueryService.getDetails(
+                'Go',
+                'Cloud Run',
+                'tag'
+            );
 
             expect(result).toEqual({
                 evaluation_data_raw_json: { passed: true },
@@ -40,9 +48,15 @@ describe('bigqueryService', () => {
             };
             mockQuery.mockResolvedValue([[mockRow]]);
 
-            const result = await bigqueryService.getDetails('Go', 'Cloud Run', 'tag');
+            const result = await bigqueryService.getDetails(
+                'Go',
+                'Cloud Run',
+                'tag'
+            );
 
-            expect(result.evaluation_data_raw_json.error).toBe('Failed to parse evaluation data.');
+            expect(result.evaluation_data_raw_json.error).toBe(
+                'Failed to parse evaluation data.'
+            );
         });
     });
 });

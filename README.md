@@ -8,16 +8,16 @@ The Code Quality Dashboard is a web-based tool that provides a comprehensive ove
 
 For detailed information about the project, please refer to the following documents in the [`docs`](/docs) directory:
 
--   **[Product Requirements Document (PRD)](/docs/PRD.md):** An overview of the project's goals, features, and target audience.
--   **[Technical Design Document (TDD)](/docs/TDD.md):** A detailed description of the project's architecture and technical design.
--   **[Deployment Instructions](/docs/deployment_instructions.md):** Step-by-step instructions on how to deploy the application to Google Cloud.
+- **[Product Requirements Document (PRD)](/docs/PRD.md):** An overview of the project's goals, features, and target audience.
+- **[Technical Design Document (TDD)](/docs/TDD.md):** A detailed description of the project's architecture and technical design.
+- **[Deployment Instructions](/docs/deployment_instructions.md):** Step-by-step instructions on how to deploy the application to Google Cloud.
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
--   [Node.js](https://nodejs.org/) installed on your machine.
--   A Google Cloud project with a BigQuery table containing the code quality data.
+- [Node.js](https://nodejs.org/) installed on your machine.
+- A Google Cloud project with a BigQuery table containing the code quality data.
 
 ### 1. Clone the Repository
 
@@ -69,7 +69,7 @@ The application will be available at [http://localhost:8080](http://localhost:80
 
 This project uses ESLint and Prettier to enforce code quality and a consistent style.
 
--   **Linting:** To check for linting errors, run:
+- **Linting:** To check for linting errors, run:
     ```bash
     npm run lint
     ```
@@ -77,7 +77,7 @@ This project uses ESLint and Prettier to enforce code quality and a consistent s
     ```bash
     npm run lint:fix
     ```
--   **Formatting:** To automatically format the entire codebase, run:
+- **Formatting:** To automatically format the entire codebase, run:
     ```bash
     npm run format
     ```

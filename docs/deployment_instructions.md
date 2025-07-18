@@ -4,10 +4,10 @@ This document provides instructions on how to deploy the Code Quality Dashboard 
 
 ## Prerequisites
 
--   A Google Cloud project with billing enabled.
--   The `gcloud` command-line tool installed and configured.
--   A GitHub repository containing the application source code.
--   A BigQuery table with the code quality data.
+- A Google Cloud project with billing enabled.
+- The `gcloud` command-line tool installed and configured.
+- A GitHub repository containing the application source code.
+- A BigQuery table with the code quality data.
 
 ## 1. Local Setup
 
@@ -80,9 +80,10 @@ The project includes a `cloudbuild.yaml` file that defines the CI/CD pipeline. T
 When deploying to Cloud Run (either manually or via Cloud Build), you must provide the necessary environment variables. It is highly recommended to use a secrets manager like [Secret Manager](https://cloud.google.com/secret-manager) for sensitive values.
 
 The required variables are:
--   `PROJECT_ID`
--   `BIGQUERY_TABLE_ID`
--   `PORT` (optional, Cloud Run sets this automatically)
+
+- `PROJECT_ID`
+- `BIGQUERY_TABLE_ID`
+- `PORT` (optional, Cloud Run sets this automatically)
 
 You will need to configure these in the "Variables & Secrets" section of your Cloud Run service.
 
