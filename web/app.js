@@ -324,15 +324,21 @@ document.addEventListener('DOMContentLoaded', () => {
     async function renderDetailView(data) {
         const evalJson = data.evaluation_data_raw_json || {};
 
-        let summaryMarkdown;
+        let summaryContent;
         const summaryData = evalJson.llm_fix_summary_for_code_generation;
+        let items = [];
+
         if (Array.isArray(summaryData) && summaryData.length > 0) {
-            // Convert array of strings into a Markdown list
-            summaryMarkdown = summaryData.map((item) => `- ${item}`).join('\n');
+            items = summaryData;
         } else if (typeof summaryData === 'string' && summaryData) {
-            summaryMarkdown = summaryData;
+            items = summaryData.split('\n').filter(line => line.trim() !== '');
+        }
+
+        if (items.length > 0) {
+            const listItems = items.map(item => `<li>${item.trim()}</li>`).join('');
+            summaryContent = `<ul class="list-disc list-outside pl-5">${listItems}</ul>`;
         } else {
-            summaryMarkdown = 'No summary available.';
+            summaryContent = '<p>No fixes suggested</p>';
         }
 
         const formattedLastUpdatedDate = data.last_updated_date?.value
@@ -422,8 +428,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const summaryCardHtml = `
             <div class="bg-white p-6 rounded-lg shadow-md">
                  <h3 class="text-xl font-bold mb-4">LLM Suggested Fixes</h3>
-                 <div class="text-gray-700 mt-1 space-y-1 prose max-w-none">
-                    ${marked.parse(summaryMarkdown)}
+                 <div class="text-gray-700 mt-1 space-y-1">
+                    ${summaryContent}
                 </div>
             </div>`;
 
