@@ -4,115 +4,100 @@ This document provides instructions on how to deploy the Code Quality Dashboard 
 
 ## Prerequisites
 
-- A Google Cloud project with billing enabled.
-- The `gcloud` command-line tool installed and configured.
-- A GitHub repository containing the application source code.
-- A BigQuery table with the code quality data.
+- You have a Google Cloud Project with billing enabled.
+- The [Google Cloud SDK](https://cloud.google.com/sdk/docs/install) (`gcloud` command-line tool) is installed and authenticated on your local machine.
+- You have a GitHub repository containing the application source code.
+- You have a BigQuery table with the code quality data.
+- Your user account has the necessary IAM permissions to manage Cloud Build, Artifact Registry, and Cloud Run (e.g., Owner, Editor, or a combination of Cloud Build Editor, Artifact Registry Administrator, and Cloud Run Admin).
 
-## 1. Local Setup
+## 1. One-Time Setup in Google Cloud
 
-### 1.1. Clone the Repository
+You only need to perform these steps once for your project.
+
+### 1.1. Enable APIs
+
+Enable the necessary Google Cloud services for your project:
 
 ```bash
-git clone https://github.com/your-username/your-repository.git
-cd your-repository
+gcloud services enable run.googleapis.com \
+  cloudbuild.googleapis.com \
+  artifactregistry.googleapis.com \
+  iam.googleapis.com
 ```
 
-### 1.2. Create a `.env` File
+### 1.2. Create an Artifact Registry Repository
 
-Create a `.env` file by copying the sample file. This file is used for local development and is not committed to the repository.
+Cloud Build needs a repository to store the Docker images it creates.
 
 ```bash
-cp .env.sample .env
+gcloud artifacts repositories create code-quality-repo \
+  --repository-format=docker \
+  --location=us-central1 \
+  --description="Docker repository for Code Quality Dashboard"
 ```
+*(Note: If you choose a different region, be sure to update it in `cloudbuild.yaml` as well.)*
 
-Open the `.env` file and add your specific configuration values.
+### 1.3. Grant Cloud Build Permissions
 
-### 1.3. Install Dependencies and Run Locally
-
-```bash
-npm install
-npm start
-```
-
-The application should now be running at `http://localhost:8080`.
-
-## 2. Google Cloud Setup
-
-### 2.1. Enable APIs
-
-Enable the required Google Cloud APIs for your project:
+By default, the Cloud Build service account needs permission to deploy to Cloud Run and act as a Service Account User.
 
 ```bash
-gcloud services enable run.googleapis.com
-gcloud services enable cloudbuild.googleapis.com
-gcloud services enable artifactregistry.googleapis.com
-gcloud services enable bigquery.googleapis.com
-```
+PROJECT_NUMBER=$(gcloud projects describe $(gcloud config get-value project) --format='value(projectNumber)')
+GCP_SA_EMAIL="$PROJECT_NUMBER@cloudbuild.gserviceaccount.com"
 
-### 2.2. Create a Service Account
-
-Create a service account for Cloud Build to use for deployments:
-
-```bash
-gcloud iam service-accounts create cloud-build-deployer \
-    --display-name "Cloud Build Deployer"
-
-gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
-    --member="serviceAccount:cloud-build-deployer@YOUR_PROJECT_ID.iam.gserviceaccount.com" \
+# Grant the Cloud Run Admin role to the Cloud Build service account
+gcloud projects add-iam-policy-binding $(gcloud config get-value project) \
+    --member="serviceAccount:$GCP_SA_EMAIL" \
     --role="roles/run.admin"
 
-gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
-    --member="serviceAccount:cloud-build-deployer@YOUR_PROJECT_ID.iam.gserviceaccount.com" \
-    --role="roles/iam.serviceAccountUser"
+# Grant the IAM Service Account User role to the Cloud Build service account
+gcloud projects add-iam-policy-binding $(gcloud config get-value project) \
+  --member="serviceAccount:$GCP_SA_EMAIL" \
+  --role="roles/iam.serviceAccountUser"
 ```
 
-## 3. Deployment with Cloud Build
+## 2. Deployment Process
 
-The project includes a `cloudbuild.yaml` file that defines the CI/CD pipeline. The pipeline will:
+The project is configured to be deployed automatically using a `cloudbuild.yaml` file.
 
-1.  Build the Docker image.
-2.  Push the image to Google Artifact Registry.
-3.  Deploy the image to Cloud Run, injecting environment variables as secrets or directly.
+### 2.1. Configure Environment Variables
 
-### 3.1. Set Environment Variables in Cloud Run
+The `cloudbuild.yaml` file is responsible for deploying the application to two Cloud Run services: `code-quality-dashboard` and `code-quality-dashboard-gen`. Each has its own set of environment variables.
 
-When deploying to Cloud Run (either manually or via Cloud Build), you must provide the necessary environment variables. It is highly recommended to use a secrets manager like [Secret Manager](https://cloud.google.com/secret-manager) for sensitive values.
+Before running the build, you must review and, if necessary, update the `--set-env-vars` arguments in the `cloudbuild.yaml` file to match your project's configuration (e.g., `PROJECT_ID` and `BIGQUERY_TABLE_ID`).
 
-The required variables are:
+**Important:** The `cloudbuild.yaml` uses `^##^` as a special delimiter to separate multiple environment variables in a single line if you need to add more.
 
-- `PROJECT_ID`
-- `BIGQUERY_TABLE_ID`
-- `PORT` (optional, Cloud Run sets this automatically)
+### 2.2. Manual Deployment
 
-You will need to configure these in the "Variables & Secrets" section of your Cloud Run service.
-
-### 3.2. Create a Cloud Build Trigger
-
-1.  Go to the Cloud Build Triggers page in the Google Cloud Console.
-2.  Click "Create trigger".
-3.  Enter a name for the trigger (e.g., `deploy-to-cloud-run`).
-4.  Select your GitHub repository as the source.
-5.  Choose the branch you want to deploy from (e.g., `main`).
-6.  For the "Configuration" type, select "Cloud Build configuration file (yaml or json)".
-7.  Enter `cloudbuild.yaml` as the location of the configuration file.
-8.  Click "Create".
-
-### 3.3. Trigger a Build
-
-To trigger a build, push a commit to the branch you configured in the trigger. Cloud Build will automatically build and deploy the application.
-
-## 4. Manual Deployment
-
-To deploy the application manually, you can use the `gcloud` command-line tool. Make sure to replace the placeholder values for the environment variables.
+You can trigger a deployment manually from your local machine. From the root directory of the project, run the following command:
 
 ```bash
-gcloud builds submit --config cloudbuild.yaml . \
-    --substitutions=_SERVICE_NAME=code-quality-dashboard,_REGION=us-central1
+gcloud builds submit --config cloudbuild.yaml .
 ```
 
-This will execute the steps defined in the `cloudbuild.yaml` file and deploy the application to Cloud Run.
+This command will:
+1. Upload your project directory to Cloud Build.
+2. Execute the steps in `cloudbuild.yaml`.
+3. Build the Docker image and push it to your Artifact Registry.
+4. Deploy the new version to your Cloud Run services.
 
-## 5. Accessing the Application
+### 2.3. Automated CI/CD Deployment
 
-Once the deployment is complete, you can find the URL of your service in the Cloud Run section of the Google Cloud Console.
+For a fully automated CI/CD pipeline, you can create a Cloud Build Trigger.
+
+1.  Go to the **Cloud Build Triggers** page in the Google Cloud Console.
+2.  Connect your GitHub repository as a source.
+3.  Click **Create trigger**.
+4.  Enter a name (e.g., `deploy-on-push-main`).
+5.  Select the event to invoke the trigger (e.g., **Push to a branch**).
+6.  Specify your repository and the branch (e.g., `main`).
+7.  For **Configuration**, select **Cloud Build configuration file (yaml or json)**.
+8.  Enter `cloudbuild.yaml` as the location.
+9.  Click **Create**.
+
+Now, every time you push a commit to the specified branch, Cloud Build will automatically trigger a new build and deployment.
+
+## 3. Accessing the Application
+
+After the deployment completes, you can find the public URLs for your services in the **Cloud Run** section of the Google Cloud Console.

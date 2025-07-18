@@ -1,6 +1,6 @@
 # Code Quality Dashboard
 
-The Code Quality Dashboard is a web-based tool that provides a comprehensive overview of code quality metrics from a BigQuery data source. It allows developers and managers to visualize and drill down into code quality data, from a high-level language overview to specific code samples.
+The Code Quality Dashboard is a web-based tool that provides a comprehensive overview of code quality metrics from a BigQuery data source. It allows developers and managers to visualize and drill down into code quality data, from a high-level language overview to specific code samples. It includes a theme-switcher for light and dark mode preferences.
 
 ![Code Quality Dashboard Screenshot](https://storage.googleapis.com/screenshots-prod-external/2024-05-29-12-09-03.png)
 
@@ -58,9 +58,19 @@ gcloud auth application-default login
 
 ### 4. Install Dependencies and Run
 
+First, install the project dependencies:
 ```bash
 npm install
+```
+
+To run the application for production, use:
+```bash
 npm start
+```
+
+For local development with hot-reloading, run:
+```bash
+npm run dev
 ```
 
 The application will be available at [http://localhost:8080](http://localhost:8080).

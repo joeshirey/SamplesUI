@@ -54,6 +54,10 @@ The Code Quality Dashboard is a web-based tool designed to provide developers an
     - A summary of suggested fixes from the LLM.
 - **FR-13:** Users must be able to copy a direct link to the current detail view.
 
+### 4.5. User Interface
+
+- **FR-14:** The application must include a theme switcher to toggle between a light and dark mode. The user's preference should be saved in their browser for future visits.
+
 ## 5. Non-Functional Requirements
 
 - **NFR-1: Performance:** The application should load quickly and respond to user interactions within a reasonable time frame.

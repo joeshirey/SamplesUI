@@ -49,6 +49,7 @@ The backend code is organized into the following structure:
 - `@google-cloud/bigquery`: Google Cloud client library for BigQuery.
 - `cors`: Middleware for enabling Cross-Origin Resource Sharing.
 - `dotenv`: Module for loading environment variables from a `.env` file.
+- `nodemon`: A tool that automatically restarts the Node.js application when file changes in the directory are detected (used for development).
 
 ### 3.3. API Endpoints
 
