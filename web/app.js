@@ -426,15 +426,59 @@ document.addEventListener('DOMContentLoaded', () => {
         codeCardHtml += '</div>';
 
         const summaryCardHtml = `
-            <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="bg-white p-6 rounded-lg shadow-md mb-6">
                  <h3 class="text-xl font-bold mb-4">LLM Suggested Fixes</h3>
                  <div class="text-gray-700 mt-1 space-y-1">
                     ${summaryContent}
                 </div>
             </div>`;
+        
+        let gitHistoryCardHtml = '';
+        if (data.git_info_raw_json) {
+            try {
+                let gitHistory = JSON.parse(data.git_info_raw_json);
+                
+                const validHistory = gitHistory.filter(item => {
+                    const d = new Date(item.date);
+                    return d instanceof Date && !isNaN(d);
+                }).sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                if (validHistory.length > 0) {
+                    const historyRows = validHistory.map(item => `
+                        <tr class="border-b">
+                            <td class="py-2 px-4 text-sm text-gray-600">${new Date(item.date).toLocaleDateString()}</td>
+                            <td class="py-2 px-4 text-sm text-gray-600">${item.author_name}</td>
+                            <td class="py-2 px-4 text-sm text-gray-600">${item.message}</td>
+                        </tr>
+                    `).join('');
+
+                    gitHistoryCardHtml = `
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-xl font-bold mb-4">GitHub History</h3>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full bg-white">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="py-2 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                            <th class="py-2 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Author</th>
+                                            <th class="py-2 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Message</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${historyRows}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>`;
+                }
+            } catch (e) {
+                console.error("Failed to parse git_info_raw_json:", e);
+                // Do not render the card if parsing fails
+            }
+        }
 
         detailViewContent.innerHTML =
-            headerHtml + analysisCardHtml + codeCardHtml + summaryCardHtml;
+            headerHtml + analysisCardHtml + codeCardHtml + summaryCardHtml + gitHistoryCardHtml;
     }
 
     // --- API Fetching ---
