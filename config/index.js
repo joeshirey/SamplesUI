@@ -15,8 +15,8 @@ const config = {
     },
 };
 
-// Fail-fast validation for essential configuration.
-if (!config.bigquery.tableId) {
+// Fail-fast validation for essential configuration, but not during tests.
+if (process.env.NODE_ENV !== 'test' && !config.bigquery.tableId) {
     console.error(
         'FATAL ERROR: BIGQUERY_TABLE_ID is not defined in your .env file.'
     );
