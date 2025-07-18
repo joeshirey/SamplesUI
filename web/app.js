@@ -324,22 +324,15 @@ document.addEventListener('DOMContentLoaded', () => {
     async function renderDetailView(data) {
         const evalJson = data.evaluation_data_raw_json || {};
 
-        let summaryListItems;
+        let summaryMarkdown;
         const summaryData = evalJson.llm_fix_summary_for_code_generation;
         if (Array.isArray(summaryData) && summaryData.length > 0) {
-            summaryListItems = summaryData
-                .map((item) => `<li>${item}</li>`)
-                .join('');
+            // Convert array of strings into a Markdown list
+            summaryMarkdown = summaryData.map((item) => `- ${item}`).join('\n');
         } else if (typeof summaryData === 'string' && summaryData) {
-            summaryListItems = summaryData
-                .split('\n')
-                .filter((line) => line.trim() !== '')
-                .map((item) => `<li>${item.trim()}</li>`)
-                .join('');
-            if (!summaryListItems)
-                summaryListItems = '<li>No summary available.</li>';
+            summaryMarkdown = summaryData;
         } else {
-            summaryListItems = '<li>No summary available.</li>';
+            summaryMarkdown = 'No summary available.';
         }
 
         const formattedLastUpdatedDate = data.last_updated_date?.value
@@ -388,14 +381,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     <h4 class="font-semibold text-gray-800 mb-2">Criteria Breakdown:</h4>
                     <div class="space-y-3">
                     ${(evalJson.criteria_breakdown || [])
-                        .map(
-                            (criterion) => `
-                        <div class="border rounded-lg p-3 bg-gray-50">
-                            <p class="font-bold">${criterion.criterion_name || 'N/A'} (Score: ${criterion.score} / Weight: ${criterion.weight})</p>
-                            <p class="text-sm text-gray-600 mt-1"><strong>Assessment:</strong> ${criterion.assessment || 'N/A'}</p>
-                            <p class="text-sm text-gray-600 mt-1"><strong>Recommendation:</strong> ${criterion.recommendations_for_llm_fix || 'N/A'}</p>
-                        </div>`
-                        )
+                        .map((criterion) => {
+                            let recommendationText = criterion.recommendations_for_llm_fix || 'N/A';
+                            // If recommendations are an array, convert to a Markdown list.
+                            if (Array.isArray(recommendationText)) {
+                                recommendationText = recommendationText.map(item => `- ${item}`).join('\n');
+                            }
+                            return `
+                                <div class="border rounded-lg p-3 bg-gray-50">
+                                    <p class="font-bold">${criterion.criterion_name || 'N/A'} (Score: ${criterion.score} / Weight: ${criterion.weight})</p>
+                                    <div class="text-sm text-gray-600 mt-1 prose max-w-none"><strong>Assessment:</strong> ${marked.parse(criterion.assessment || 'N/A')}</div>
+                                    <div class="text-sm text-gray-600 mt-1 prose max-w-none"><strong>Recommendation:</strong> ${marked.parse(recommendationText)}</div>
+                                </div>`;
+                        })
                         .join('')}
                     </div>
                 </div>
@@ -424,8 +422,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const summaryCardHtml = `
             <div class="bg-white p-6 rounded-lg shadow-md">
                  <h3 class="text-xl font-bold mb-4">LLM Suggested Fixes</h3>
-                 <div class="text-gray-700 mt-1 space-y-1">
-                    ${summaryListItems}
+                 <div class="text-gray-700 mt-1 space-y-1 prose max-w-none">
+                    ${marked.parse(summaryMarkdown)}
                 </div>
             </div>`;
 
