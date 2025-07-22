@@ -359,10 +359,44 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
+     * Replaces citation markers (e.g., `[1, 2]`) in text with linked icons.
+     * @param {string} text - The text to process.
+     * @param {Array} citations - The array of citation objects.
+     * @returns {string} The processed text with HTML links.
+     */
+    function linkCitations(text, citations) {
+        if (!text || !citations || citations.length === 0) {
+            return text;
+        }
+
+        const citationMap = new Map(
+            citations.map((c) => [c.citation_number, c.url])
+        );
+
+        return text.replace(/\[([\d\s,]+)\]/g, (match, numbers) => {
+            const links = numbers
+                .split(',')
+                .map((num) => parseInt(num.trim(), 10))
+                .filter((num) => citationMap.has(num))
+                .map(
+                    (num) =>
+                        `<a href="${citationMap.get(num)}" target="_blank" rel="noopener noreferrer" class="inline-block align-middle ml-1" title="Citation ${num}">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-blue-600 hover:text-blue-800">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+                            </svg>
+                        </a>`
+                )
+                .join('');
+            return links ? ` ${links}` : match; // Add space before links for separation
+        });
+    }
+
+    /**
      * Renders the main detail view with all evaluation data.
      */
     async function renderDetailView(data) {
         const evalJson = data.evaluation_data_raw_json || {};
+        const citations = evalJson.citations || [];
 
         let summaryContent;
         const summaryData = evalJson.llm_fix_summary_for_code_generation;
@@ -434,17 +468,27 @@ document.addEventListener('DOMContentLoaded', () => {
                         .map((criterion) => {
                             let recommendationText =
                                 criterion.recommendations_for_llm_fix || 'N/A';
-                            // If recommendations are an array, convert to a Markdown list.
                             if (Array.isArray(recommendationText)) {
                                 recommendationText = recommendationText
                                     .map((item) => `- ${item}`)
                                     .join('\n');
                             }
+
+                            const assessmentHtml = marked.parse(
+                                linkCitations(
+                                    criterion.assessment || 'N/A',
+                                    citations
+                                )
+                            );
+                            const recommendationHtml = marked.parse(
+                                linkCitations(recommendationText, citations)
+                            );
+
                             return `
                                 <div class="border rounded-lg p-3 bg-gray-50">
                                     <p class="font-bold">${criterion.criterion_name || 'N/A'} (Score: ${criterion.score} / Weight: ${criterion.weight})</p>
-                                    <div class="text-sm text-gray-600 mt-1 prose max-w-none"><strong>Assessment:</strong> ${marked.parse(criterion.assessment || 'N/A')}</div>
-                                    <div class="text-sm text-gray-600 mt-1 prose max-w-none"><strong>Recommendation:</strong> ${marked.parse(recommendationText)}</div>
+                                    <div class="text-sm text-gray-600 mt-1 prose max-w-none"><strong>Assessment:</strong> ${assessmentHtml}</div>
+                                    <div class="text-sm text-gray-600 mt-1 prose max-w-none"><strong>Recommendation:</strong> ${recommendationHtml}</div>
                                 </div>`;
                         })
                         .join('')}
