@@ -20,7 +20,7 @@ steps:
     - '--platform=managed'
     - '--allow-unauthenticated' # This makes the service publicly accessible
 #    - '--set-env-vars=BIGQUERY_TABLE_ID=joeshireylearn-374523.existing_samples.v_all_samples,PROJECT_ID=joeshireylearn-374523'
-    - '--set-env-vars=BIGQUERY_TABLE_ID=ppanoply-ai-dev.Samples_Health.repo_analysis_view,PROJECT_ID=panoply-ai-dev'
+    - '--set-env-vars=BIGQUERY_TABLE_ID=panoply-ai-dev.Samples_Health.repo_analysis_view,PROJECT_ID=panoply-ai-dev'
 #    - '--set-env-vars=BIGQUERY_TABLE_ID=panoply-ai-dev.samples_views.all_samples_view_generated,PROJECT_ID=panoply-ai-dev'
 
 # 3. Deploy container image to Cloud Run
