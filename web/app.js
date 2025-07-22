@@ -9,6 +9,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Constants and DOM References ---
     const API_BASE_URL = '/api';
     const languageSelect = document.getElementById('language-select');
+    const productCategorySelect = document.getElementById(
+        'product-category-select'
+    );
     const productAreaFilterInput = document.getElementById(
         'product-area-filter'
     );
@@ -29,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Application State ---
     let currentLanguage = null;
+    let currentProductCategory = null;
     let currentProductArea = null;
     let currentRegionTag = null;
     let allProductAreas = []; // Cache for the current language's product areas.
@@ -36,6 +40,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Event Listeners ---
     languageSelect.addEventListener('change', handleLanguageChange);
+    productCategorySelect.addEventListener(
+        'change',
+        applyProductAreaFiltersAndSorting
+    );
     productAreaFilterInput.addEventListener(
         'input',
         applyProductAreaFiltersAndSorting
@@ -114,9 +122,13 @@ document.addEventListener('DOMContentLoaded', () => {
             '<p class="text-gray-500">Loading product areas...</p>';
         productAreaFilterInput.value = '';
         regionTagFilterInput.value = '';
+        productCategorySelect.innerHTML =
+            '<option selected disabled>Loading...</option>';
+        productCategorySelect.disabled = true;
 
         try {
             allProductAreas = await fetchProductAreas(currentLanguage);
+            populateProductCategoryFilter(allProductAreas);
             applyProductAreaFiltersAndSorting();
         } catch (error) {
             showError(
@@ -129,8 +141,9 @@ document.addEventListener('DOMContentLoaded', () => {
     /**
      * Handles a click on a product area, fetching its region tags.
      */
-    async function handleProductAreaClick(clickedElement, productAreaName) {
-        currentProductArea = productAreaName;
+    async function handleProductAreaClick(clickedElement, productArea) {
+        currentProductArea = productArea.product_name;
+        currentProductCategory = productArea.product_category;
 
         // Highlight the selected item for better UX.
         document
@@ -191,11 +204,38 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Filtering and Sorting ---
 
     /**
+     * Populates the product category dropdown based on the available product areas.
+     */
+    function populateProductCategoryFilter(areas) {
+        const categories = [
+            ...new Set(areas.map((area) => area.product_category)),
+        ].sort();
+        productCategorySelect.innerHTML =
+            '<option value="">All Categories</option>';
+        categories.forEach((category) => {
+            if (!category) return;
+            const option = document.createElement('option');
+            option.value = category;
+            option.textContent = category;
+            productCategorySelect.appendChild(option);
+        });
+        productCategorySelect.disabled = false;
+    }
+
+    /**
      * Applies current filter and sort options to the product area list and re-renders it.
      */
     function applyProductAreaFiltersAndSorting() {
         let areasToDisplay = [...allProductAreas];
         const filterText = productAreaFilterInput.value.toLowerCase();
+        const selectedCategory = productCategorySelect.value;
+
+        if (selectedCategory) {
+            areasToDisplay = areasToDisplay.filter(
+                (area) => area.product_category === selectedCategory
+            );
+        }
+
         if (filterText) {
             areasToDisplay = areasToDisplay.filter((area) =>
                 area.product_name.toLowerCase().includes(filterText)
@@ -274,7 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="text-sm text-gray-500 mt-1">Samples: ${area.samples}</div>
             `;
             item.addEventListener('click', (event) =>
-                handleProductAreaClick(event.currentTarget, area.product_name)
+                handleProductAreaClick(event.currentTarget, area)
             );
             productAreaList.appendChild(item);
         });
@@ -554,7 +594,7 @@ document.addEventListener('DOMContentLoaded', () => {
             );
             return;
         }
-        const link = `${window.location.origin}${window.location.pathname}?lang=${encodeURIComponent(currentLanguage)}&pa=${encodeURIComponent(currentProductArea)}&rt=${encodeURIComponent(currentRegionTag)}`;
+        const link = `${window.location.origin}${window.location.pathname}?lang=${encodeURIComponent(currentLanguage)}&pc=${encodeURIComponent(currentProductCategory)}&pa=${encodeURIComponent(currentProductArea)}&rt=${encodeURIComponent(currentRegionTag)}`;
         navigator.clipboard
             .writeText(link)
             .then(() => {
@@ -573,6 +613,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadFromUrlParams() {
         const params = new URLSearchParams(window.location.search);
         const lang = params.get('lang');
+        const pc = params.get('pc');
         const pa = params.get('pa');
         const rt = params.get('rt');
 
@@ -585,7 +626,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Fetch and render all levels of data
                 allProductAreas = await fetchProductAreas(currentLanguage);
+                populateProductCategoryFilter(allProductAreas);
+                if (pc) {
+                    productCategorySelect.value = pc;
+                    currentProductCategory = pc;
+                }
                 applyProductAreaFiltersAndSorting();
+
 
                 currentProductArea = pa;
                 allRegionTags = await fetchRegionTags(

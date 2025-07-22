@@ -63,11 +63,12 @@ async function getProductAreas(language) {
     const query = `
         SELECT
             product_name,
+            product_category,
             COUNT(DISTINCT github_link) AS samples,
             ROUND(AVG(overall_compliance_score)) AS score
         FROM \`${table}\`
         WHERE sample_language = @language
-        GROUP BY product_name
+        GROUP BY product_name, product_category
         ORDER BY samples DESC`;
 
     // The `params` object maps the named parameter in the query (`@language`)
