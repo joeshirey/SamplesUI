@@ -1,8 +1,20 @@
 # Code Quality Dashboard
 
-The Code Quality Dashboard is a web-based tool that provides a comprehensive overview of code quality metrics from a BigQuery data source. It allows developers and managers to visualize and drill down into code quality data, from a high-level language overview to specific code samples. It includes a theme-switcher for light and dark mode preferences.
+The Code Quality Dashboard is a web-based tool that provides a comprehensive overview of code quality metrics from a BigQuery data source. It allows developers and managers to visualize and drill down into code quality data, from a high-level language overview to specific code samples.
 
-![Code Quality Dashboard Screenshot](https://storage.googleapis.com/screenshots-prod-external/2024-05-29-12-09-03.png)
+## ✨ Features
+
+- **Language-Based Filtering:** Start by selecting a programming language to see all associated product areas.
+- **Product Category Filtering:** Further refine the list of products by selecting a specific product category.
+- **Detailed Breakdowns:** Drill down from a product area to see a list of its associated "region tags" (individual code samples).
+- **In-Depth Analysis:** View detailed evaluation data for each code sample, including:
+    - An overall compliance score.
+    - A breakdown of evaluation criteria with assessments and recommendations.
+    - Linked citations to external resources directly in the analysis.
+    - The raw code file with syntax highlighting.
+    - A summary of suggested fixes from an LLM.
+- **Deep Linking:** Copy a direct URL to any detail view to easily share findings with your team.
+- **Sort and Filter:** Easily sort and filter lists of products and region tags to quickly find what you're looking for.
 
 ## 📚 Documentation
 
@@ -16,7 +28,7 @@ For detailed information about the project, please refer to the following docume
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) installed on your machine.
+- [Node.js](https://nodejs.org/) version 20.x or higher.
 - A Google Cloud project with a BigQuery table containing the code quality data.
 
 ### 1. Clone the Repository
@@ -58,9 +70,9 @@ gcloud auth application-default login
 
 ### 4. Install Dependencies and Run
 
-First, install the project dependencies:
+First, install the project dependencies using `npm ci` for a clean, reliable install based on the lock file:
 ```bash
-npm install
+npm ci
 ```
 
 To run the application for production, use:
@@ -74,23 +86,6 @@ npm run dev
 ```
 
 The application will be available at [http://localhost:8080](http://localhost:8080).
-
-## ✨ Code Quality
-
-This project uses ESLint and Prettier to enforce code quality and a consistent style.
-
-- **Linting:** To check for linting errors, run:
-    ```bash
-    npm run lint
-    ```
-    To automatically fix fixable issues, run:
-    ```bash
-    npm run lint:fix
-    ```
-- **Formatting:** To automatically format the entire codebase, run:
-    ```bash
-    npm run format
-    ```
 
 ## 🐳 Docker
 

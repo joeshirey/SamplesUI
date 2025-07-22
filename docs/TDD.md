@@ -74,6 +74,7 @@ The frontend is a single-page application built with HTML, CSS, and vanilla Java
 
 - **Tailwind CSS:** A utility-first CSS framework for styling.
 - **Highlight.js:** A library for syntax highlighting.
+- **Marked.js:** A library for parsing Markdown, used to render evaluation assessments and recommendations.
 
 ### 4.2. Code Structure
 
@@ -102,9 +103,10 @@ The data is stored in a BigQuery table with the following (simplified) schema:
 
 - `sample_language` (STRING): The programming language of the code sample.
 - `product_name` (STRING): The product name the code sample belongs to.
+- `product_category` (STRING): The category the product belongs to.
 - `region_tags` (ARRAY<STRING>): An array of region tags associated with the code sample.
 - `overall_compliance_score` (INTEGER): The overall quality score of the code sample.
-- `evaluation_data_raw_json` (STRING): A JSON string containing the detailed evaluation data.
+- `evaluation_data_raw_json` (STRING): A JSON string containing the detailed evaluation data, which may include an array of `citations`.
 - `github_link` (STRING): A link to the code sample on GitHub.
 - `evaluation_date` (DATE): The date the code quality evaluation was performed.
 

@@ -58,15 +58,13 @@ gcloud projects add-iam-policy-binding $(gcloud config get-value project) \
 
 ## 2. Deployment Process
 
-The project is configured to be deployed automatically using a `cloudbuild.yaml` file.
+The project is configured to be deployed automatically using a `cloudbuild.yaml` file. The build uses a `Dockerfile` which is configured to use the `node:20-alpine` base image.
 
 ### 2.1. Configure Environment Variables
 
 The `cloudbuild.yaml` file is responsible for deploying the application to two Cloud Run services: `code-quality-dashboard` and `code-quality-dashboard-gen`. Each has its own set of environment variables.
 
 Before running the build, you must review and, if necessary, update the `--set-env-vars` arguments in the `cloudbuild.yaml` file to match your project's configuration (e.g., `PROJECT_ID` and `BIGQUERY_TABLE_ID`).
-
-**Important:** The `cloudbuild.yaml` uses `^##^` as a special delimiter to separate multiple environment variables in a single line if you need to add more.
 
 ### 2.2. Manual Deployment
 

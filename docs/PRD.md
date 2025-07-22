@@ -32,31 +32,29 @@ The Code Quality Dashboard is a web-based tool designed to provide developers an
     - The number of code samples associated with it.
     - An aggregated "quality score" for that product area.
 - **FR-5:** Users must be able to filter the list of product areas by name.
-- **FR-6:** Users must be able to sort the list of product areas by name, sample count, or quality score.
+- **FR-6:** Users must be able to filter the list of product areas by product category via a dropdown.
+- **FR-7:** Users must be able to sort the list of product areas by name, sample count, or quality score.
 
 ### 4.3. Region Tag View
 
-- **FR-7:** After selecting a product area, the user should see a list of "region tags" associated with it.
-- **FR-8:** For each region tag, the dashboard should display:
+- **FR-8:** After selecting a product area, the user should see a list of "region tags" associated with it.
+- **FR-9:** For each region tag, the dashboard should display:
     - The name of the region tag.
     - An individual quality score for that region tag.
-- **FR-9:** Users must be able to filter the list of region tags by name.
-- **FR-10:** Users must be able to sort the list of region tags by name or quality score.
+- **FR-10:** Users must be able to filter the list of region tags by name.
+- **FR-11:** Users must be able to sort the list of region tags by name or quality score.
 
 ### 4.4. Detail View
 
-- **FR-11:** After selecting a region tag, the user should see a detailed view of the corresponding code sample.
-- **FR-12:** The detail view must display:
+- **FR-12:** After selecting a region tag, the user should see a detailed view of the corresponding code sample.
+- **FR-13:** The detail view must display:
     - The overall quality score.
     - The date of the last update and the evaluation date.
     - A breakdown of the evaluation criteria, including the assessment and recommendations for each.
+    - Linked icons for any citations in the assessment text, which open in a new tab.
     - The raw code file with syntax highlighting.
     - A summary of suggested fixes from the LLM.
-- **FR-13:** Users must be able to copy a direct link to the current detail view.
-
-### 4.5. User Interface
-
-- **FR-14:** The application must include a theme switcher to toggle between a light and dark mode. The user's preference should be saved in their browser for future visits.
+- **FR-14:** Users must be able to copy a direct link to the current detail view.
 
 ## 5. Non-Functional Requirements
 
