@@ -525,12 +525,15 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>`;
 
         let gitHistoryCardHtml = '';
-        if (data.git_info_raw_json) {
+        if (data.git_info && data.git_info.commit_history) {
             try {
-                let gitHistory = JSON.parse(data.git_info_raw_json);
+                // The data is already a parsed JSON object.
+                const gitHistory = data.git_info.commit_history;
 
+                // Filter out any invalid entries and sort by date.
                 const validHistory = gitHistory
                     .filter((item) => {
+                        if (!item || !item.date) return false;
                         const d = new Date(item.date);
                         return d instanceof Date && !isNaN(d);
                     })
@@ -541,9 +544,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         .map(
                             (item) => `
                         <tr class="border-b">
-                            <td class="py-2 px-4 text-sm text-gray-600">${new Date(item.date).toLocaleDateString()}</td>
-                            <td class="py-2 px-4 text-sm text-gray-600">${item.author_name}</td>
-                            <td class="py-2 px-4 text-sm text-gray-600">${item.message}</td>
+                            <td class="py-2 px-4 text-sm text-gray-600">${new Date(
+                                item.date
+                            ).toLocaleDateString()}</td>
+                            <td class="py-2 px-4 text-sm text-gray-600">${
+                                item.author_name
+                            }</td>
+                            <td class="py-2 px-4 text-sm text-gray-600">${
+                                item.message
+                            }</td>
                         </tr>
                     `
                         )
@@ -569,8 +578,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>`;
                 }
             } catch (e) {
-                console.error('Failed to parse git_info_raw_json:', e);
-                // Do not render the card if parsing fails
+                console.error('Failed to process git_info.commit_history:', e);
+                // Do not render the card if processing fails.
             }
         }
 
