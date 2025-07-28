@@ -525,12 +525,10 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>`;
 
         let gitHistoryCardHtml = '';
-        if (data.git_info && data.git_info.commit_history) {
+        if (data.git_info_raw_json) {
             try {
-                // The data is already a parsed JSON object.
-                const gitHistory = data.git_info.commit_history;
+                const gitHistory = JSON.parse(data.git_info_raw_json);
 
-                // Filter out any invalid entries and sort by date.
                 const validHistory = gitHistory
                     .filter((item) => {
                         if (!item || !item.date) return false;
@@ -578,8 +576,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>`;
                 }
             } catch (e) {
-                console.error('Failed to process git_info.commit_history:', e);
-                // Do not render the card if processing fails.
+                console.error('Failed to parse git_info_raw_json:', e);
+                // Do not render the card if parsing fails
             }
         }
 
