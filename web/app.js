@@ -684,7 +684,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 applyProductAreaFiltersAndSorting();
 
-
                 currentProductArea = pa;
                 allRegionTags = await fetchRegionTags(
                     currentLanguage,

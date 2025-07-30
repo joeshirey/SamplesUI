@@ -2,15 +2,15 @@
 
 ## 1. Introduction
 
-This document outlines the technical design and architecture of the Code Quality Dashboard. The dashboard is a full-stack application with a Node.js backend and a vanilla JavaScript frontend. It is designed to be deployed as a containerized application on Google Cloud.
+This document outlines the technical design, architecture, and implementation details of the Code Quality Dashboard. The dashboard is a full-stack application featuring a Node.js backend and a vanilla JavaScript frontend. It is designed to be deployed as a containerized application on Google Cloud, providing a scalable and maintainable solution for code quality analysis.
 
 ## 2. Architecture
 
-The application follows a modular, service-oriented architecture:
+The application follows a modular, service-oriented architecture that separates concerns between the frontend, backend, and data source.
 
-- **Frontend:** A single-page application (SPA) built with HTML, CSS, and vanilla JavaScript. It is responsible for rendering the UI and making API calls to the backend.
-- **Backend:** A Node.js server built with the Express framework. It provides a RESTful API for the frontend to interact with the data source.
-- **Data Source:** A BigQuery table that stores the code quality data.
+- **Frontend:** A single-page application (SPA) built with HTML, CSS, and vanilla JavaScript. It is responsible for rendering the user interface, managing user interactions, and making API calls to the backend. It is served as a static asset from the Node.js server.
+- **Backend:** A Node.js server built with the Express framework. It provides a RESTful API for the frontend to fetch data and handles all interactions with the BigQuery data source.
+- **Data Source:** A BigQuery table (or view) that stores the comprehensive code quality data. The backend authenticates with Google Cloud using Application Default Credentials (ADC).
 
 ### 2.1. System Diagram
 
@@ -23,7 +23,7 @@ The application follows a modular, service-oriented architecture:
 
 ## 3. Backend Design
 
-The backend is a Node.js application that uses the Express framework to provide a RESTful API. It is structured into distinct modules for configuration, routing, and data services.
+The backend is a Node.js application that uses the Express framework to provide a RESTful API. It is structured into distinct modules for configuration, routing, and data services, promoting a clean and maintainable codebase.
 
 ### 3.1. Project Structure
 
@@ -45,71 +45,75 @@ The backend code is organized into the following structure:
 
 ### 3.2. Key Dependencies
 
-- `express`: Web framework for Node.js.
-- `@google-cloud/bigquery`: Google Cloud client library for BigQuery.
-- `cors`: Middleware for enabling Cross-Origin Resource Sharing.
-- `dotenv`: Module for loading environment variables from a `.env` file.
-- `nodemon`: A tool that automatically restarts the Node.js application when file changes in the directory are detected (used for development).
+- `express`: A minimal and flexible web framework for Node.js, used to build the RESTful API.
+- `@google-cloud/bigquery`: The official Google Cloud client library for interacting with BigQuery.
+- `cors`: Middleware for enabling Cross-Origin Resource Sharing, allowing the frontend to make requests to the backend.
+- `dotenv`: A module for loading environment variables from a `.env` file into `process.env`, simplifying local development.
+- `nodemon`: A development tool that automatically restarts the Node.js application when file changes are detected.
 
 ### 3.3. API Endpoints
 
 The backend exposes the following API endpoints under the `/api` prefix:
 
-- `GET /config`: Returns the public Google Cloud Project ID and BigQuery view name.
-- `GET /languages`: Returns a list of all available programming languages.
-- `GET /product-areas`: Returns a list of product areas for a given language.
-- `GET /region-tags`: Returns a list of region tags for a given language and product area.
-- `GET /details`: Returns the detailed evaluation data for a given selection.
-- `GET /fetch-code`: Fetches the raw code file from a given GitHub URL.
+- `GET /config`: Returns public configuration details, such as the Google Cloud Project ID and the BigQuery view name, for display on the frontend.
+- `GET /languages`: Returns a distinct list of all available programming languages from the data source.
+- `GET /product-areas`: Returns a list of product areas for a given language, including aggregated metrics like sample count and average score.
+- `GET /region-tags`: Returns a list of region tags (individual samples) for a given language and product area.
+- `GET /details`: Returns the complete, detailed evaluation data for a specific code sample, identified by its language, product area, and region tag.
+- `GET /fetch-code`: Acts as a proxy to fetch the raw code file from a public GitHub URL, avoiding client-side CORS issues.
 
 ### 3.4. Error Handling
 
-The application uses a centralized error-handling middleware in `server.js`. Any exceptions thrown in the asynchronous route handlers are caught by this middleware, which logs the error and returns a standardized JSON error response to the client.
+The application implements a centralized error-handling strategy. A dedicated middleware function in `server.js` catches any exceptions that occur in the asynchronous route handlers. This ensures that all errors are handled consistently, logged to the console for debugging, and returned to the client as a standardized JSON error response with a `500` status code.
 
 ## 4. Frontend Design
 
-The frontend is a single-page application built with HTML, CSS, and vanilla JavaScript.
+The frontend is a responsive single-page application built with HTML, CSS, and vanilla JavaScript, ensuring a lightweight and fast user experience.
 
-### 4.1. Dependencies
+### 4.1. Key Dependencies
 
-- **Tailwind CSS:** A utility-first CSS framework for styling.
-- **Highlight.js:** A library for syntax highlighting.
-- **Marked.js:** A library for parsing Markdown, used to render evaluation assessments and recommendations.
+- **Tailwind CSS:** A utility-first CSS framework used for all styling, enabling rapid development of a modern and responsive UI.
+- **Highlight.js:** A powerful library for client-side syntax highlighting of the code samples displayed in the detail view.
+- **Marked.js:** A library for parsing Markdown, used to render the evaluation assessments and recommendations, which may contain Markdown formatting.
 
 ### 4.2. Code Structure
 
 The frontend code is organized into three main files located in the `web/` directory:
 
-- `index.html`: The main HTML file that contains the structure of the application.
-- `style.css`: A file for any custom CSS that is not handled by Tailwind CSS.
-- `app.js`: The main JavaScript file that contains all the application logic.
+- `index.html`: The main HTML file that defines the structure of the application, including the three-panel layout and all UI elements.
+- `style.css`: A file for any custom CSS that is not handled by Tailwind CSS, such as scrollbar styling.
+- `app.js`: The core JavaScript file that contains all the application logic, including state management, API data fetching, event handling, and DOM manipulation.
 
 ## 5. Code Quality
 
-To ensure a high level of code quality and consistency, the project uses the following tools:
+To ensure a high level of code quality, consistency, and maintainability, the project is configured with the following tools:
 
-- **ESLint:** A static analysis tool for identifying and reporting on patterns found in ECMAScript/JavaScript code. Configuration is in `eslint.config.js`.
-- **Prettier:** An opinionated code formatter that enforces a consistent style. Configuration is in `.prettierrc.json`.
+- **ESLint:** A static analysis tool for identifying and reporting on patterns in JavaScript code, helping to prevent common errors. The configuration is located in `eslint.config.js`.
+- **Prettier:** An opinionated code formatter that enforces a consistent code style across the entire codebase. The configuration is in `.prettierrc.json`.
 
 The following npm scripts are available to run these tools:
 
-- `npm run lint`: Checks for linting errors.
-- `npm run lint:fix`: Automatically fixes fixable linting errors.
-- `npm run format`: Formats the entire codebase.
+- `npm run lint`: Checks the codebase for any linting errors.
+- `npm run lint:fix`: Automatically fixes any fixable linting errors.
+- `npm run format`: Formats the entire codebase using Prettier.
+- `npm test`: Runs the full test suite using the Jest testing framework.
 
 ## 6. Data Model
 
-The data is stored in a BigQuery table with the following (simplified) schema:
+The data is stored in a BigQuery table (or view) with a schema designed to support the dashboard's features. The key fields include:
 
-- `sample_language` (STRING): The programming language of the code sample.
-- `product_name` (STRING): The product name the code sample belongs to.
-- `product_category` (STRING): The category the product belongs to.
-- `region_tags` (ARRAY<STRING>): An array of region tags associated with the code sample.
-- `overall_compliance_score` (INTEGER): The overall quality score of the code sample.
-- `evaluation_data_raw_json` (STRING): A JSON string containing the detailed evaluation data, which may include an array of `citations`.
-- `github_link` (STRING): A link to the code sample on GitHub.
+- `sample_language` (STRING): The programming language of the code sample (e.g., "javascript", "python").
+- `product_name` (STRING): The name of the product the code sample belongs to (e.g., "Cloud Run", "BigQuery").
+- `product_category` (STRING): The category the product belongs to (e.g., "Serverless", "Databases").
+- `region_tags` (ARRAY<STRING>): An array of region tags associated with the code sample, used for identification.
+- `overall_compliance_score` (INTEGER): The overall quality score of the code sample, typically on a scale of 0-100.
+- `evaluation_data_raw_json` (STRING): A JSON string containing the detailed evaluation data, including the criteria breakdown, assessments, recommendations, and an array of `citations`.
+- `github_link` (STRING): A URL to the code sample on GitHub.
+- `raw_code` (STRING): The complete source code of the sample file.
+- `git_info_raw_json` (STRING): A JSON string containing the Git history of the file.
 - `evaluation_date` (DATE): The date the code quality evaluation was performed.
+- `last_updated_date` (DATE): The date the source file was last updated in the repository.
 
 ## 7. Deployment
 
-The application is designed to be deployed as a containerized application on Google Cloud. See `docs/deployment_instructions.md` for detailed deployment instructions.
+The application is designed to be deployed as a containerized application on Google Cloud Run. The `Dockerfile` specifies the container image, and the `cloudbuild.yaml` file defines the CI/CD pipeline for automated builds and deployments. For detailed instructions, see `docs/deployment_instructions.md`.
